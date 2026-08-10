@@ -1,0 +1,51 @@
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryWithReauth } from '@/store/base-query';
+import type {
+  GoodsReceipt,
+  GoodsReceiptDetail,
+  PaginatedResponse,
+} from '@/types/api';
+
+export const goodsReceiptsApi = createApi({
+  reducerPath: 'goodsReceiptsApi',
+  baseQuery: baseQueryWithReauth,
+  tagTypes: ['GoodsReceipt', 'Batch'],
+  endpoints: (builder) => ({
+    getGoodsReceipts: builder.query<PaginatedResponse<GoodsReceipt>, { supplierId?: string; branchId?: string; page?: number; limit?: number }>({
+      query: (params) => ({
+        url: '/goods-receipts',
+        params,
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map((g) => ({ type: 'GoodsReceipt' as const, id: g.id })),
+              { type: 'GoodsReceipt', id: 'LIST' },
+            ]
+          : [{ type: 'GoodsReceipt', id: 'LIST' }],
+    }),
+
+    getGoodsReceipt: builder.query<GoodsReceiptDetail, string>({
+      query: (id) => `/goods-receipts/${id}`,
+      providesTags: (result, error, id) => [{ type: 'GoodsReceipt', id }],
+    }),
+
+    createGoodsReceipt: builder.mutation<GoodsReceipt, FormData>({
+      query: (formData) => ({
+        url: '/goods-receipts',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: [
+        { type: 'GoodsReceipt', id: 'LIST' },
+        { type: 'Batch', id: 'LIST' },
+      ],
+    }),
+  }),
+});
+
+export const {
+  useGetGoodsReceiptsQuery,
+  useGetGoodsReceiptQuery,
+  useCreateGoodsReceiptMutation,
+} = goodsReceiptsApi;

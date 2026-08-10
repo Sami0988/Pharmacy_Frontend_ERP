@@ -1,0 +1,68 @@
+'use client';
+
+import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { PosCartLine } from './PosCartLine';
+
+export interface PosCartItem {
+  itemId: string;
+  itemName: string;
+  genericName?: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  batchId?: string;
+  batchNo?: string;
+}
+
+interface PosCartProps {
+  items: PosCartItem[];
+  onUpdateQuantity: (itemId: string, quantity: number) => void;
+  onRemove: (itemId: string) => void;
+  onBatchSelected: (itemId: string, batchId: string, batchNo: string) => void;
+  onChangeBatch: (itemId: string) => void;
+}
+
+export function PosCart({
+  items,
+  onUpdateQuantity,
+  onRemove,
+  onBatchSelected,
+  onChangeBatch,
+}: PosCartProps) {
+  const total = items.reduce((sum, item) => sum + item.subtotal, 0);
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-foreground">
+            Cart ({items.length} {items.length === 1 ? 'item' : 'items'})
+          </h3>
+          <p className="text-2xl font-bold text-foreground">
+            {total.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}
+          </p>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {items.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">
+            Search and add items to start a sale
+          </p>
+        ) : (
+          <div className="divide-y divide-border">
+            {items.map((item) => (
+              <PosCartLine
+                key={item.itemId}
+                item={item}
+                onUpdateQuantity={onUpdateQuantity}
+                onRemove={onRemove}
+                onBatchSelected={onBatchSelected}
+                onChangeBatch={onChangeBatch}
+              />
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

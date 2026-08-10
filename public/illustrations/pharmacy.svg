@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" fill="none">
+  <!-- Background circles -->
+  <circle cx="300" cy="250" r="180" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="300" cy="250" r="130" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="300" cy="250" r="80" fill="rgba(255,255,255,0.04)"/>
+
+  <!-- Mortar and Pestle -->
+  <ellipse cx="300" cy="310" rx="90" ry="35" fill="rgba(255,255,255,0.15)"/>
+  <path d="M230 300 Q230 350 300 360 Q370 350 370 300" stroke="rgba(255,255,255,0.6)" stroke-width="3" fill="none"/>
+  <line x1="300" y1="200" x2="300" y2="290" stroke="rgba(255,255,255,0.5)" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="300" cy="195" r="8" fill="rgba(255,255,255,0.5)"/>
+
+  <!-- Pill capsule left -->
+  <g transform="translate(180, 200) rotate(-30)">
+    <rect x="0" y="0" width="50" height="22" rx="11" fill="rgba(255,255,255,0.25)"/>
+    <rect x="0" y="0" width="25" height="22" rx="11" fill="rgba(255,255,255,0.4)"/>
+  </g>
+
+  <!-- Pill capsule right -->
+  <g transform="translate(370, 220) rotate(20)">
+    <rect x="0" y="0" width="50" height="22" rx="11" fill="rgba(255,255,255,0.25)"/>
+    <rect x="25" y="0" width="25" height="22" rx="11" fill="rgba(255,255,255,0.4)"/>
+  </g>
+
+  <!-- Medicine bottle -->
+  <g transform="translate(400, 140)">
+    <rect x="0" y="15" width="40" height="60" rx="6" fill="rgba(255,255,255,0.3)"/>
+    <rect x="8" y="0" width="24" height="18" rx="4" fill="rgba(255,255,255,0.4)"/>
+    <rect x="10" y="35" width="20" height="8" rx="2" fill="rgba(255,255,255,0.15)"/>
+  </g>
+
+  <!-- Rx symbol -->
+  <g transform="translate(140, 300)">
+    <text font-family="serif" font-size="48" font-style="italic" fill="rgba(255,255,255,0.35)">℞</text>
+  </g>
+
+  <!-- Small floating dots -->
+  <circle cx="150" cy="180" r="4" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="450" cy="320" r="5" fill="rgba(255,255,255,0.25)"/>
+  <circle cx="200" cy="380" r="3" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="420" cy="170" r="3" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="250" cy="150" r="4" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="380" cy="370" r="4" fill="rgba(255,255,255,0.25)"/>
+</svg>
