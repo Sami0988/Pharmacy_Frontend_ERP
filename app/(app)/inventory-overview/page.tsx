@@ -79,7 +79,7 @@ export default function InventoryOverviewPage() {
   const stockMap = useMemo(() => {
     const map: Record<string, { store: number; dispatcher: number }> = {};
     if (stockData) {
-      stockData.forEach((s) => {
+      stockData.data.forEach((s: { itemId: string; storeQuantity: number; dispatcherQuantity: number }) => {
         map[s.itemId] = {
           store: (map[s.itemId]?.store || 0) + s.storeQuantity,
           dispatcher: (map[s.itemId]?.dispatcher || 0) + s.dispatcherQuantity,

@@ -19,7 +19,7 @@ export function ProfileSettingsCard() {
   const { t } = useTranslations();
   const [updateName, { isLoading: isUpdating }] = useUpdateNameMutation();
   const [uploadImage, { isLoading: isUploading }] = useUploadProfileImageMutation();
-  const [displayName, setDisplayName] = useState(user?.displayName ?? '');
+  const [displayName, setDisplayName] = useState(user?.name ?? '');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -29,7 +29,7 @@ export function ProfileSettingsCard() {
       return;
     }
     try {
-      await updateName({ displayName: displayName.trim() }).unwrap();
+      await updateName({ name: displayName.trim() }).unwrap();
       await refetch();
       toast.success(t('settings.nameUpdated'));
     } catch {
@@ -65,7 +65,7 @@ export function ProfileSettingsCard() {
     }
   };
 
-  const imageSrc = previewUrl || user?.imageUrl || undefined;
+  const imageSrc = previewUrl || user?.profileImageUrl || undefined;
 
   return (
     <Card>
@@ -78,7 +78,7 @@ export function ProfileSettingsCard() {
             {imageSrc ? (
               <Image
                 src={imageSrc}
-                alt={user?.displayName || 'Profile'}
+                alt={user?.name || 'Profile'}
                 className="h-20 w-20 rounded-full object-cover"
                 width={80}
                 height={80}

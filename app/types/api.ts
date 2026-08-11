@@ -543,6 +543,7 @@ export interface DashboardSummary {
   expiringStock: { within30Days: number; within60Days: number; within90Days: number };
   topSellers: { itemId: string; itemName: string; revenue: number; quantity: number }[];
   notificationSummary: NotificationSummary;
+  compliance?: string;
 }
 
 export interface ReorderSuggestion {

@@ -109,7 +109,8 @@ export function GoodsReceiptForm() {
     setError,
     setValue,
   } = useForm<GrnFormData>({
-    resolver: zodResolver(grnSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(grnSchema) as any,
     defaultValues: {
       supplierId: '',
       receiptDate: new Date().toISOString().split('T')[0],

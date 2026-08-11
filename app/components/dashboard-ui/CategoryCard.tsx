@@ -18,7 +18,6 @@ const colorMap: Record<string, { bg: string; text: string; iconBg: string }> = {
   purple: { bg: 'bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/30', text: 'text-purple-700 dark:text-purple-300', iconBg: 'bg-purple-100 dark:bg-purple-800/40' },
   amber: { bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/30', text: 'text-amber-700 dark:text-amber-300', iconBg: 'bg-amber-100 dark:bg-amber-800/40' },
   red: { bg: 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/30', text: 'text-red-700 dark:text-red-300', iconBg: 'bg-red-100 dark:bg-red-800/40' },
-  cyan: { bg: 'bg-cyan-50 dark:bg-cyan-900/20 border-cyan-100 dark:border-cyan-800/30', text: 'text-cyan-700 dark:text-cyan-300', iconBg: 'bg-cyan-100 dark:bg-cyan-800/40' },
   pink: { bg: 'bg-pink-50 dark:bg-pink-900/20 border-pink-100 dark:border-pink-800/30', text: 'text-pink-700 dark:text-pink-300', iconBg: 'bg-pink-100 dark:bg-pink-800/40' },
   gray: { bg: 'bg-background border-border', text: 'text-secondary-foreground', iconBg: 'bg-secondary' },
 };

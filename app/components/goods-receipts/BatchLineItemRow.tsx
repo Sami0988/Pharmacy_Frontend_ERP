@@ -22,6 +22,8 @@ import { useForm } from "react-hook-form";
 import { useTranslations } from "@/lib/i18n";
 
 interface BatchLineItemRowFormValues {
+  supplierId: string;
+  receiptDate: string;
   items: Array<{
     itemId: string;
     batchNo: string;
@@ -31,6 +33,9 @@ interface BatchLineItemRowFormValues {
     markupPercentage?: number;
     sellingPrice?: number;
   }>;
+  taxPaid: boolean;
+  paymentDueDateType: 'one_month' | 'two_months' | 'six_months' | 'one_year' | 'other';
+  paymentDueDate?: string;
 }
 
 interface BatchLineItemRowProps {
