@@ -126,19 +126,6 @@ export function BrandPanel() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            {/* Badge */}
-            <motion.div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 mb-8"
-              whileHover={{ scale: 1.02 }}
-            >
-              <motion.div
-                className="h-2 w-2 rounded-full bg-emerald-400"
-                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <span className="text-sm font-medium text-slate-300">{t('auth.brand.trustedBy')}</span>
-            </motion.div>
-
             {/* Headline */}
             <h1 className="text-4xl font-bold text-white leading-tight mb-6 tracking-tight">
               {t('auth.brand.tagline')}
