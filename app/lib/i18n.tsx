@@ -12,7 +12,7 @@ const translations: Record<Locale, typeof en> = { en, am, om };
 interface I18nContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (path: string) => string;
+  t: (path: string, params?: Record<string, string | number>) => string;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -40,8 +40,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('locale', newLocale);
   }, []);
 
-  const t = useCallback((path: string): string => {
-    return getNestedValue(translations[locale] as Record<string, unknown>, path);
+  const t = useCallback((path: string, params?: Record<string, string | number>): string => {
+    let value = getNestedValue(translations[locale] as Record<string, unknown>, path);
+    if (params) {
+      for (const [key, val] of Object.entries(params)) {
+        value = value.replace(new RegExp(`\\{${key}\\}`, 'g'), String(val));
+      }
+    }
+    return value;
   }, [locale]);
 
   return (
