@@ -7,8 +7,10 @@ import { CheckoutForm } from '@/components/sales/CheckoutForm';
 import { SubstituteSuggestionModal } from '@/components/sales/SubstituteSuggestionModal';
 import { BatchPickerModal } from '@/components/sales/BatchPickerModal';
 import type { Item } from '@/types/api';
+import { useTranslations } from '@/lib/i18n';
 
 export default function NewSalePage() {
+  const { t } = useTranslations();
   const [cart, setCart] = useState<PosCartItem[]>([]);
   const [substituteModalItem, setSubstituteModalItem] = useState<Item | null>(null);
   const [batchPickerItem, setBatchPickerItem] = useState<{
@@ -142,8 +144,8 @@ export default function NewSalePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">New Sale</h1>
-        <p className="text-sm text-muted-foreground">Store → Customer</p>
+        <h1 className="text-2xl font-bold text-foreground">{t('sales.newSale')}</h1>
+        <p className="text-sm text-muted-foreground">{t('sales.storeToCustomer')}</p>
       </div>
 
       {hasRootError && (

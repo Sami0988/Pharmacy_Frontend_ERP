@@ -4,9 +4,11 @@ import { useState, useCallback } from 'react';
 import { useGetStockByLocationQuery } from '@/store/api/transfers-api-slice';
 import { StockByLocationTable } from '@/components/transfers/StockByLocationTable';
 import { SearchInput } from '@/components/ui/SearchInput';
+import { useTranslations } from '@/lib/i18n';
 import { motion } from 'motion/react';
 
 export default function StockPage() {
+  const { t } = useTranslations();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
@@ -29,9 +31,9 @@ export default function StockPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Stock by Location</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('stock.title')}</h1>
         <p className="text-sm text-muted-foreground">
-          Current stock levels at Store and Dispatcher locations
+          {t('stock.description')}
         </p>
       </motion.div>
 
@@ -42,7 +44,7 @@ export default function StockPage() {
       >
         <SearchInput
           onSearch={handleSearch}
-          placeholder="Search items..."
+          placeholder={t('stock.searchItems')}
           className="max-w-md"
         />
       </motion.div>

@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/Button';
 import { useGetSuppliersQuery } from '@/store/api/suppliers-api-slice';
 import { SuppliersTable } from '@/components/suppliers/SuppliersTable';
 import { SupplierSearchBar } from '@/components/suppliers/SupplierSearchBar';
+import { useTranslations } from '@/lib/i18n';
 import { motion } from 'motion/react';
 
 export default function SuppliersPage() {
+  const { t } = useTranslations();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -33,13 +35,13 @@ export default function SuppliersPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Suppliers</h1>
-          <p className="text-sm text-muted-foreground">Manage your vendor records</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('suppliers.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('suppliers.description')}</p>
         </div>
         <Link href="/suppliers/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
-            New Supplier
+            {t('suppliers.newSupplier')}
           </Button>
         </Link>
       </motion.div>

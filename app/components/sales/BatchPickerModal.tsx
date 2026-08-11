@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useGetItemBatchesQuery } from '@/store/api/reports-api-slice';
 import type { FefoSuggestion } from '@/types/api';
+import { useTranslations } from '@/lib/i18n';
 
 interface BatchPickerModalProps {
   open: boolean;
@@ -45,6 +46,7 @@ export function BatchPickerModal({
   onClose,
   onSelectBatch,
 }: BatchPickerModalProps) {
+  const { t } = useTranslations();
   const [pendingBatchId, setPendingBatchId] = useState<string | null>(null);
 
   const { data: batches, isLoading } = useGetItemBatchesQuery(
@@ -82,9 +84,9 @@ export function BatchPickerModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Select Batch for {itemName}</DialogTitle>
+          <DialogTitle>{t('sales.selectBatchFor').replace('{name}', itemName || '')}</DialogTitle>
           <DialogDescription>
-            Choose which batch to sell from. {quantity} unit(s) needed.
+            {t('sales.chooseBatchDescription').replace('{count}', String(quantity))}
           </DialogDescription>
         </DialogHeader>
 
@@ -95,7 +97,7 @@ export function BatchPickerModal({
             </div>
           ) : sorted.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              No batches available for this item.
+              {t('sales.noBatchesAvailable')}
             </p>
           ) : (
             sorted.map((batch) => {
@@ -145,13 +147,13 @@ export function BatchPickerModal({
 
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSelect}
             disabled={!pendingBatchId || pendingBatchId === selectedBatchId}
           >
-            Select
+            {t('sales.select')}
           </Button>
         </DialogFooter>
       </DialogContent>

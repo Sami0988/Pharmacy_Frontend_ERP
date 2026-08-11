@@ -4,6 +4,7 @@ import { useMemo, useEffect } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import { useGetItemBatchesQuery } from '@/store/api/reports-api-slice';
 import type { PosCartItem } from './PosCart';
+import { useTranslations } from '@/lib/i18n';
 
 interface PosCartLineProps {
   item: PosCartItem;
@@ -20,6 +21,7 @@ export function PosCartLine({
   onBatchSelected,
   onChangeBatch,
 }: PosCartLineProps) {
+  const { t } = useTranslations();
   const { data: batches, refetch } = useGetItemBatchesQuery(
     { itemId: item.itemId },
     { skip: item.quantity <= 0 }
@@ -50,10 +52,10 @@ export function PosCartLine({
         <p className="font-medium text-foreground truncate">{item.itemName}</p>
         {batchInfo ? (
           <p className="text-xs text-muted-foreground">
-            Batch: {batchInfo.batchNo} · Exp: {new Date(batchInfo.expiryDate).toLocaleDateString()}
+            {t('sales.batch')}: {batchInfo.batchNo} · Exp: {new Date(batchInfo.expiryDate).toLocaleDateString()}
           </p>
         ) : (
-          <p className="text-xs text-muted-foreground">Loading batch...</p>
+          <p className="text-xs text-muted-foreground">{t('sales.loadingBatch')}</p>
         )}
       </div>
 
@@ -93,7 +95,7 @@ export function PosCartLine({
           type="button"
           onClick={() => refetch()}
           className="p-1 text-muted-foreground hover:text-muted-foreground"
-          title="Refresh batch"
+          title={t('sales.refreshBatch')}
         >
           <RefreshCw className="h-3.5 w-3.5" />
         </button>
@@ -102,7 +104,7 @@ export function PosCartLine({
           onClick={() => onChangeBatch(item.itemId)}
           className="text-xs text-primary hover:text-primary/80"
         >
-          Change
+          {t('sales.change')}
         </button>
         <button
           type="button"

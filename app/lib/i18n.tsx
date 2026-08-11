@@ -3,10 +3,11 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import en from '@/messages/en.json';
 import am from '@/messages/am.json';
+import om from '@/messages/om.json';
 
-type Locale = 'en' | 'am';
+type Locale = 'en' | 'am' | 'om';
 
-const translations: Record<Locale, typeof en> = { en, am };
+const translations: Record<Locale, typeof en> = { en, am, om };
 
 interface I18nContextValue {
   locale: Locale;

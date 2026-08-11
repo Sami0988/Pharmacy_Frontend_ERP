@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useGetSessionsQuery, useRevokeSessionMutation } from '@/store/api/auth-api-slice';
 import { formatUserAgent, parseUserAgent } from '@/lib/user-agent';
+import { useTranslations } from '@/lib/i18n';
 import { toast } from 'sonner';
 
 function getDeviceIcon(ua: string) {
@@ -41,6 +42,7 @@ function SessionSkeleton() {
 }
 
 export function ActiveSessionsCard() {
+  const { t } = useTranslations();
   const { data, isLoading } = useGetSessionsQuery();
   const [revokeSession, { isLoading: isRevoking }] = useRevokeSessionMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -58,9 +60,9 @@ export function ActiveSessionsCard() {
     if (!selectedSessionId) return;
     try {
       await revokeSession(selectedSessionId).unwrap();
-      toast.success('Session revoked successfully');
+      toast.success(t('settings.revokeSessionSuccess'));
     } catch {
-      toast.error('Failed to revoke session');
+      toast.error(t('settings.revokeSessionFailed'));
     } finally {
       setConfirmOpen(false);
       setSelectedSessionId(null);
@@ -81,11 +83,11 @@ export function ActiveSessionsCard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Monitor className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Active Sessions</h2>
+              <h2 className="text-lg font-semibold">{t('settings.activeSessions')}</h2>
             </div>
             {otherSessions.length > 0 && (
               <Button variant="danger" size="sm" onClick={handleRevokeAll}>
-                Revoke All Others
+                {t('settings.revokeAllOthers')}
               </Button>
             )}
           </div>
@@ -97,7 +99,7 @@ export function ActiveSessionsCard() {
               <SessionSkeleton />
             </div>
           ) : sessions.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No active sessions</p>
+            <p className="text-sm text-muted-foreground text-center py-4">{t('settings.noSessions')}</p>
           ) : (
             <div className="divide-y">
               {sessions.map((session) => (
@@ -114,13 +116,13 @@ export function ActiveSessionsCard() {
                         {formatUserAgent(session.userAgent)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        IP: {session.ipAddress} · Last active: {new Date(session.lastActiveAt).toLocaleString()}
+                        IP: {session.ipAddress} · {t('settings.lastActive')}: {new Date(session.lastActiveAt).toLocaleString()}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {session.isCurrent ? (
-                      <Badge variant="success">Current</Badge>
+                      <Badge variant="success">{t('settings.currentSession')}</Badge>
                     ) : (
                       <Button
                         variant="ghost"
@@ -146,9 +148,9 @@ export function ActiveSessionsCard() {
           setConfirmOpen(false);
           setSelectedSessionId(null);
         }}
-        title="Revoke Session"
-        description="This device will be logged out immediately. Are you sure?"
-        confirmLabel="Revoke"
+        title={t('settings.revokeSession')}
+        description={t('settings.revokeSessionConfirm')}
+        confirmLabel={t('settings.revoke')}
         variant="danger"
         isLoading={isRevoking}
       />

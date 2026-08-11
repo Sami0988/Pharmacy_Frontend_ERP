@@ -15,6 +15,7 @@ import {
   useRegenerateBackupCodesMutation,
 } from '@/store/api/auth-api-slice';
 import { useAuth } from '@/lib/auth/use-auth';
+import { useTranslations } from '@/lib/i18n';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Copy, Check, Shield, ShieldOff } from 'lucide-react';
@@ -33,6 +34,7 @@ type DisableMfaFormData = z.infer<typeof disableMfaSchema>;
 
 export function MfaSetupCard() {
   const { user, refetch } = useAuth();
+  const { t } = useTranslations();
   const [showSetup, setShowSetup] = useState(false);
   const [showDisable, setShowDisable] = useState(false);
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
@@ -72,7 +74,7 @@ export function MfaSetupCard() {
       setShowSetup(false);
       refetch();
     } catch {
-      toast.error('Invalid code. Please try again.');
+      toast.error(t('settings.mfa.invalidCode'));
     }
   };
 
@@ -82,7 +84,7 @@ export function MfaSetupCard() {
       setShowDisable(false);
       refetch();
     } catch {
-      toast.error('Invalid password or code. Please try again.');
+      toast.error(t('settings.mfa.invalidCredentials'));
     }
   };
 
@@ -92,7 +94,7 @@ export function MfaSetupCard() {
         const result = await regenerateBackupCodes().unwrap();
         setBackupCodes(result.backupCodes);
       } catch {
-        toast.error('Failed to regenerate backup codes.');
+        toast.error(t('settings.mfa.regenerateFailed'));
       }
     };
     setPendingAction(() => doRegenerate);
@@ -111,13 +113,13 @@ export function MfaSetupCard() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-green-600" />
-            <h2 className="text-lg font-semibold">Backup Codes</h2>
+            <h2 className="text-lg font-semibold">{t('settings.mfa.backupCodesTitle')}</h2>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800 font-medium">
-              Save these backup codes somewhere safe. They won&apos;t be shown again.
+              {t('settings.mfa.backupCodesWarning')}
             </p>
           </div>
 
@@ -129,14 +131,14 @@ export function MfaSetupCard() {
 
           <Button variant="secondary" onClick={copyBackupCodes}>
             {copied ? (
-              <><Check className="h-4 w-4 mr-2" /> Copied!</>
+              <><Check className="h-4 w-4 mr-2" /> {t('settings.mfa.copied')}</>
             ) : (
-              <><Copy className="h-4 w-4 mr-2" /> Copy to clipboard</>
+              <><Copy className="h-4 w-4 mr-2" /> {t('settings.mfa.copyToClipboard')}</>
             )}
           </Button>
 
           <Button onClick={() => setBackupCodes([])} className="w-full">
-            I&apos;ve saved my backup codes
+            {t('settings.mfa.savedBackupCodes')}
           </Button>
         </CardContent>
       </Card>
@@ -149,12 +151,12 @@ export function MfaSetupCard() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-blue-600" />
-            <h2 className="text-lg font-semibold">Set Up Two-Factor Authentication</h2>
+            <h2 className="text-lg font-semibold">{t('settings.mfa.setupTitle')}</h2>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)
+            {t('settings.mfa.setupDescription')}
           </p>
 
           <div className="flex justify-center">
@@ -168,7 +170,7 @@ export function MfaSetupCard() {
           </div>
 
           <div className="text-center">
-            <p className="text-xs text-muted-foreground mb-1">Or enter this key manually:</p>
+            <p className="text-xs text-muted-foreground mb-1">{t('settings.mfa.manualEntryKey')}</p>
             <code className="text-sm bg-secondary px-2 py-1 rounded">
               {mfaSetup.manualEntryKey}
             </code>
@@ -176,7 +178,7 @@ export function MfaSetupCard() {
 
           <form onSubmit={handleSubmitEnable(onEnable)} className="space-y-4">
             <Input
-              label="Enter the 6-digit code from your app"
+              label={t('settings.mfa.enterCode')}
               type="text"
               placeholder="000000"
               maxLength={6}
@@ -186,14 +188,14 @@ export function MfaSetupCard() {
 
             <div className="flex gap-2">
               <Button type="submit" isLoading={isEnabling} className="flex-1">
-                Verify & Enable
+                {t('settings.mfa.verifyAndEnable')}
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => setShowSetup(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </form>
@@ -208,25 +210,25 @@ export function MfaSetupCard() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <ShieldOff className="h-5 w-5 text-red-600" />
-            <h2 className="text-lg font-semibold">Disable Two-Factor Authentication</h2>
+            <h2 className="text-lg font-semibold">{t('settings.mfa.disableTitle')}</h2>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Enter your password and a valid code to disable MFA.
+            {t('settings.mfa.disableDescription')}
           </p>
 
           <form onSubmit={handleSubmitDisable(onDisable)} className="space-y-4">
             <Input
-              label="Password"
+              label={t('settings.mfa.password')}
               type="password"
-              placeholder="Enter your password"
+              placeholder={t('settings.mfa.enterPassword')}
               error={disableErrors.password?.message}
               {...registerDisable('password')}
             />
 
             <Input
-              label="Authentication Code"
+              label={t('settings.mfa.authCode')}
               type="text"
               placeholder="000000"
               maxLength={6}
@@ -241,14 +243,14 @@ export function MfaSetupCard() {
                 isLoading={isDisabling}
                 className="flex-1"
               >
-                Disable MFA
+                {t('settings.mfa.disableMfa')}
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => setShowDisable(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </form>
@@ -263,7 +265,7 @@ export function MfaSetupCard() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Two-Factor Authentication</h2>
+          <h2 className="text-lg font-semibold">{t('settings.mfa.title')}</h2>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -271,7 +273,7 @@ export function MfaSetupCard() {
           <>
             <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
               <Check className="h-5 w-5 text-green-600" />
-              <span className="text-sm text-green-800">MFA is enabled</span>
+              <span className="text-sm text-green-800">{t('settings.mfa.enabled')}</span>
             </div>
 
             <div className="flex gap-2">
@@ -279,27 +281,27 @@ export function MfaSetupCard() {
                 variant="danger"
                 onClick={() => setShowDisable(true)}
               >
-                Disable MFA
+                {t('settings.mfa.disableMfa')}
               </Button>
               <Button
                 variant="secondary"
                 onClick={handleRegenerateBackupCodes}
                 isLoading={isRegenerating}
               >
-                Regenerate Backup Codes
+                {t('settings.mfa.regenerateBackupCodes')}
               </Button>
             </div>
           </>
         ) : (
           <>
           <p className="text-sm text-muted-foreground">
-              Two-factor authentication adds an extra layer of security to your account.
+              {t('settings.mfa.description')}
             </p>
             <Button
               onClick={() => setShowSetup(true)}
               isLoading={isSetupLoading}
             >
-              Enable MFA
+              {t('settings.mfa.enableMfa')}
             </Button>
           </>
         )}
@@ -310,8 +312,8 @@ export function MfaSetupCard() {
       open={confirmOpen}
       onConfirm={() => { pendingAction(); setConfirmOpen(false); }}
       onCancel={() => setConfirmOpen(false)}
-      title="Regenerate Backup Codes"
-      description="Are you sure? Your old backup codes will stop working."
+      title={t('settings.mfa.regenerateTitle')}
+      description={t('settings.mfa.regenerateDescription')}
       variant="danger"
     />
     </>

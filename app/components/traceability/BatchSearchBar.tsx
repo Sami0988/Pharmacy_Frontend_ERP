@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from '@/lib/i18n';
 
 interface BatchSearchBarProps {
   value: string;
@@ -11,6 +12,7 @@ interface BatchSearchBarProps {
 }
 
 export function BatchSearchBar({ value, onChange, onSearch }: BatchSearchBarProps) {
+  const { t } = useTranslations();
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -27,7 +29,7 @@ export function BatchSearchBar({ value, onChange, onSearch }: BatchSearchBarProp
             onSearch();
           }
         }}
-        placeholder="Enter batch number..."
+        placeholder={t('traceability.searchPlaceholder')}
         className={cn(
           'flex h-14 w-full rounded-lg border border-input bg-card pl-12 pr-4 py-3 text-lg',
           'placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',

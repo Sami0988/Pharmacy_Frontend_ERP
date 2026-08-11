@@ -2,6 +2,7 @@
 
 import { DataTable, Column } from '@/components/ui/DataTable';
 import type { Transfer } from '@/types/api';
+import { useTranslations } from '@/lib/i18n';
 import type { PaginationMeta } from '@/components/ui/PaginationControls';
 
 interface TransfersTableProps {
@@ -14,32 +15,34 @@ interface TransfersTableProps {
   };
 }
 
-const columns: Column<Transfer>[] = [
-  { key: 'itemName', header: 'Item' },
-  { key: 'batchNo', header: 'Batch No' },
-  {
-    key: 'quantity',
-    header: 'Quantity',
-    render: (t) => <span className="font-medium">{t.quantity}</span>,
-  },
-  {
-    key: 'fromLocationName',
-    header: 'From → To',
-    render: (t) => (
-      <span className="font-medium">
-        {t.fromLocationName} → {t.toLocationName}
-      </span>
-    ),
-  },
-  { key: 'transferredByName', header: 'Transferred By' },
-  {
-    key: 'transferDate',
-    header: 'Date',
-    render: (t) => new Date(t.transferDate).toLocaleDateString(),
-  },
-];
-
 export function TransfersTable({ data, isLoading, isFetching, pagination }: TransfersTableProps) {
+  const { t } = useTranslations();
+
+  const columns: Column<Transfer>[] = [
+    { key: 'itemName', header: t('transfers.item') },
+    { key: 'batchNo', header: t('transfers.batchNo') },
+    {
+      key: 'quantity',
+      header: t('transfers.quantity'),
+      render: (row) => <span className="font-medium">{row.quantity}</span>,
+    },
+    {
+      key: 'fromLocationName',
+      header: t('transfers.fromTo'),
+      render: (row) => (
+        <span className="font-medium">
+          {row.fromLocationName} → {row.toLocationName}
+        </span>
+      ),
+    },
+    { key: 'transferredByName', header: t('transfers.transferredBy') },
+    {
+      key: 'transferDate',
+      header: t('transfers.date'),
+      render: (row) => new Date(row.transferDate).toLocaleDateString(),
+    },
+  ];
+
   return (
     <DataTable
       columns={columns}
@@ -47,7 +50,7 @@ export function TransfersTable({ data, isLoading, isFetching, pagination }: Tran
       isLoading={isLoading}
       isFetching={isFetching}
       pagination={pagination}
-      emptyMessage="No transfers recorded"
+      emptyMessage={t('transfers.noTransfers')}
       keyExtractor={(t) => t.id}
     />
   );

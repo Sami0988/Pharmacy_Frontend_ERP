@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { PosCartLine } from './PosCartLine';
+import { useTranslations } from '@/lib/i18n';
 
 export interface PosCartItem {
   itemId: string;
@@ -29,6 +30,7 @@ export function PosCart({
   onBatchSelected,
   onChangeBatch,
 }: PosCartProps) {
+  const { t } = useTranslations();
   const total = items.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
@@ -36,7 +38,7 @@ export function PosCart({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-foreground">
-            Cart ({items.length} {items.length === 1 ? 'item' : 'items'})
+            {t('sales.cart')} ({items.length} {items.length === 1 ? 'item' : 'items'})
           </h3>
           <p className="text-2xl font-bold text-foreground">
             {total.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}
@@ -46,7 +48,7 @@ export function PosCart({
       <CardContent>
         {items.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
-            Search and add items to start a sale
+            {t('sales.emptyCart')}
           </p>
         ) : (
           <div className="divide-y divide-border">

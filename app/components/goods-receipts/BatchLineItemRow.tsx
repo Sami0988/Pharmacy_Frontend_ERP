@@ -19,6 +19,7 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { useGetItemsQuery, useCreateItemMutation } from "@/store/api/items-api-slice";
 import { useForm } from "react-hook-form";
+import { useTranslations } from "@/lib/i18n";
 
 interface BatchLineItemRowFormValues {
   items: Array<{
@@ -63,6 +64,7 @@ export function BatchLineItemRow({
   canRemove,
   errors,
 }: BatchLineItemRowProps) {
+  const { t } = useTranslations();
   const [itemSearch, setItemSearch] = useState("");
   const [newItemOpen, setNewItemOpen] = useState(false);
   const [customPriceMode, setCustomPriceMode] = useState(false);
@@ -90,20 +92,22 @@ export function BatchLineItemRow({
     setValue(`items.${index}.markupPercentage`, undefined);
   };
 
+  const newItemSchema = z.object({
+    name: z.string().min(1, t('items.nameRequired')),
+    genericName: z.string().optional(),
+    category: z.string().optional(),
+    unit: z.string().min(1, t('items.unitRequired')),
+    reorderLevel: z.number().optional(),
+    isControlledSubstance: z.boolean().optional(),
+  });
+
   const {
     register: registerItem,
     handleSubmit: handleSubmitItem,
     formState: { errors: itemErrors },
     reset: resetItem,
   } = useForm({
-    resolver: zodResolver(z.object({
-      name: z.string().min(1, "Item name is required"),
-      genericName: z.string().optional(),
-      category: z.string().optional(),
-      unit: z.string().min(1, "Unit is required"),
-      reorderLevel: z.number().optional(),
-      isControlledSubstance: z.boolean().optional(),
-    })),
+    resolver: zodResolver(newItemSchema),
     defaultValues: {
       name: "",
       genericName: "",
@@ -164,7 +168,7 @@ export function BatchLineItemRow({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormField
-          label="Item"
+          label={t('goodsReceipts.supplier')}
           required
           error={errors?.itemId?.message}
           className="sm:col-span-2"
@@ -181,15 +185,15 @@ export function BatchLineItemRow({
                   value: item.id,
                   label: `${item.name}${item.strength ? ` - ${item.strength}` : ""}`,
                 }))}
-                placeholder="Select an item"
-                emptyMessage="No items found"
+                placeholder={t('goodsReceipts.selectItem')}
+                emptyMessage={t('goodsReceipts.noItemsFound')}
                 footer={
                   <button
                     type="button"
                     onClick={() => setNewItemOpen(true)}
                     className="w-full text-left text-sm text-primary hover:underline font-medium"
                   >
-                    + Create new item
+                    {t('goodsReceipts.createNewItem')}
                   </button>
                 }
               />
@@ -198,7 +202,7 @@ export function BatchLineItemRow({
         </FormField>
 
         <FormField
-          label="Batch Number"
+          label={t('goodsReceipts.batchNumber')}
           required
           error={errors?.batchNo?.message}
         >
@@ -209,7 +213,7 @@ export function BatchLineItemRow({
         </FormField>
 
         <FormField
-          label="Expiry Date"
+          label={t('goodsReceipts.expiryDate')}
           required
           error={errors?.expiryDate?.message}
         >
@@ -221,7 +225,7 @@ export function BatchLineItemRow({
         </FormField>
 
         <FormField
-          label="Quantity"
+          label={t('goodsReceipts.quantity')}
           required
           error={errors?.quantityReceived?.message}
         >
@@ -233,7 +237,7 @@ export function BatchLineItemRow({
           />
         </FormField>
 
-        <FormField label="Unit Cost" required error={errors?.unitCost?.message}>
+        <FormField label={t('goodsReceipts.unitCost')} required error={errors?.unitCost?.message}>
           <Input
             type="number"
             {...register(lineItemCost, { valueAsNumber: true })}
@@ -245,7 +249,7 @@ export function BatchLineItemRow({
 
         {/* Selling Price Section */}
         <FormField
-          label="Selling Price"
+          label={t('goodsReceipts.sellingPrice')}
           required
           error={errors?.markupPercentage?.message || errors?.sellingPrice?.message}
           className="sm:col-span-2"
@@ -275,7 +279,7 @@ export function BatchLineItemRow({
                     : "bg-background border-border text-foreground hover:bg-muted"
                 }`}
               >
-                Custom
+                {t('goodsReceipts.custom')}
               </button>
             </div>
 
@@ -296,7 +300,7 @@ export function BatchLineItemRow({
                     <span className="font-medium text-primary">ETB {calculatedSellingPrice.toFixed(2)}</span>
                   </span>
                 ) : (
-                  <span>Select a markup percentage or enter custom price</span>
+                  <span>{t('goodsReceipts.selectMarkupOrCustom')}</span>
                 )}
               </div>
             )}
@@ -307,34 +311,34 @@ export function BatchLineItemRow({
       <Dialog open={newItemOpen} onOpenChange={setNewItemOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Item</DialogTitle>
+            <DialogTitle>{t('items.newItem')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmitItem(handleCreateItem)} className="space-y-4">
-            <FormField label="Item Name" required error={itemErrors.name?.message}>
-              <Input {...registerItem("name")} placeholder="e.g. Paracetamol 500mg" />
+            <FormField label={t('items.newItem')} required error={itemErrors.name?.message}>
+              <Input {...registerItem("name")} placeholder={t('items.itemNamePlaceholder')} />
             </FormField>
-            <FormField label="Generic Name" error={itemErrors.genericName?.message}>
-              <Input {...registerItem("genericName")} placeholder="e.g. Acetaminophen" />
+            <FormField label={t('inventory.genericName')} error={itemErrors.genericName?.message}>
+              <Input {...registerItem("genericName")} placeholder={t('items.genericNamePlaceholder')} />
             </FormField>
-            <FormField label="Category" error={itemErrors.category?.message}>
-              <Input {...registerItem("category")} placeholder="e.g. Analgesic" />
+            <FormField label={t('inventory.category')} error={itemErrors.category?.message}>
+              <Input {...registerItem("category")} placeholder={t('items.categoryPlaceholder')} />
             </FormField>
-            <FormField label="Unit" required error={itemErrors.unit?.message}>
-              <Input {...registerItem("unit")} placeholder="e.g. tablet, capsule, ml" />
+            <FormField label={t('inventory.unit')} required error={itemErrors.unit?.message}>
+              <Input {...registerItem("unit")} placeholder={t('items.unitPlaceholder')} />
             </FormField>
-            <FormField label="Reorder Level" error={itemErrors.reorderLevel?.message}>
+            <FormField label={t('inventory.reorderLevel')} error={itemErrors.reorderLevel?.message}>
               <Input
                 type="number"
                 {...registerItem("reorderLevel", { valueAsNumber: true })}
-                placeholder="e.g. 100"
+                placeholder={t('items.reorderLevelPlaceholder')}
               />
             </FormField>
             <DialogFooter>
               <Button type="button" variant="secondary" onClick={() => setNewItemOpen(false)}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" isLoading={isCreatingItem}>
-                Create Item
+                {t('items.createItem')}
               </Button>
             </DialogFooter>
           </form>

@@ -25,16 +25,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/Select';
-
-const batchItemSchema = z.object({
-  itemId: z.string().min(1, 'Item is required'),
-  batchNo: z.string().min(1, 'Batch number is required'),
-  expiryDate: z.string().min(1, 'Expiry date is required'),
-  quantityReceived: z.number().int().positive('Must be a positive integer'),
-  unitCost: z.number().positive('Must be a positive number'),
-  markupPercentage: z.number().optional(),
-  sellingPrice: z.number().optional(),
-});
+import { useTranslations } from '@/lib/i18n';
 
 const paymentDueDateTypeEnum = z.enum([
   'one_month',
@@ -44,33 +35,9 @@ const paymentDueDateTypeEnum = z.enum([
   'other',
 ]);
 
-const grnSchema = z
-  .object({
-    supplierId: z.string().min(1, 'Supplier is required'),
-    receiptDate: z.string().min(1, 'Receipt date is required'),
-    items: z.array(batchItemSchema).min(1, 'At least one item is required'),
-    taxPaid: z.boolean().default(false),
-    paymentDueDateType: paymentDueDateTypeEnum.default('one_month'),
-    paymentDueDate: z.string().optional(),
-  })
-  .refine(
-    (data) => data.paymentDueDateType !== 'other' || !!data.paymentDueDate,
-    { path: ['paymentDueDate'], message: 'Custom payment due date is required' }
-  );
-
-type GrnFormData = z.infer<typeof grnSchema>;
-
-const PAYMENT_DUE_DATE_OPTIONS: { value: z.infer<typeof paymentDueDateTypeEnum>; label: string }[] =
-  [
-    { value: 'one_month', label: 'One month' },
-    { value: 'two_months', label: 'Two months' },
-    { value: 'six_months', label: 'Six months' },
-    { value: 'one_year', label: 'One year' },
-    { value: 'other', label: 'Other' },
-  ];
-
 export function GoodsReceiptForm() {
   const router = useRouter();
+  const { t } = useTranslations();
   const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
   const [invoiceError, setInvoiceError] = useState<string | undefined>(undefined);
 
@@ -80,6 +47,48 @@ export function GoodsReceiptForm() {
   const [createGoodsReceipt, { isLoading }] = useCreateGoodsReceiptMutation();
   const [createSupplier, { isLoading: isCreatingSupplier }] = useCreateSupplierMutation();
 
+  const batchItemSchema = z.object({
+    itemId: z.string().min(1, t('goodsReceipts.itemRequired')),
+    batchNo: z.string().min(1, t('goodsReceipts.batchNumberRequired')),
+    expiryDate: z.string().min(1, t('goodsReceipts.expiryDateRequired')),
+    quantityReceived: z.number().int().positive(t('goodsReceipts.positiveInteger')),
+    unitCost: z.number().positive(t('goodsReceipts.positiveNumber')),
+    markupPercentage: z.number().optional(),
+    sellingPrice: z.number().optional(),
+  });
+
+  const grnSchema = z
+    .object({
+      supplierId: z.string().min(1, t('goodsReceipts.supplierRequired')),
+      receiptDate: z.string().min(1, t('goodsReceipts.receiptDateRequired')),
+      items: z.array(batchItemSchema).min(1, t('goodsReceipts.atLeastOneItem')),
+      taxPaid: z.boolean().default(false),
+      paymentDueDateType: paymentDueDateTypeEnum.default('one_month'),
+      paymentDueDate: z.string().optional(),
+    })
+    .refine(
+      (data) => data.paymentDueDateType !== 'other' || !!data.paymentDueDate,
+      { path: ['paymentDueDate'], message: t('goodsReceipts.customPaymentDueDateRequired') }
+    );
+
+  type GrnFormData = z.infer<typeof grnSchema>;
+
+  const PAYMENT_DUE_DATE_OPTIONS: { value: z.infer<typeof paymentDueDateTypeEnum>; label: string }[] =
+    [
+      { value: 'one_month', label: t('goodsReceipts.oneMonth') },
+      { value: 'two_months', label: t('goodsReceipts.twoMonths') },
+      { value: 'six_months', label: t('goodsReceipts.sixMonths') },
+      { value: 'one_year', label: t('goodsReceipts.oneYear') },
+      { value: 'other', label: t('goodsReceipts.other') },
+    ];
+
+  const supplierSchema = z.object({
+    name: z.string().min(1, t('goodsReceipts.supplierNameRequired')),
+    phone: z.string().optional(),
+    address: z.string().optional(),
+    licenseNo: z.string().optional(),
+  });
+
   const {
     register: registerSupplier,
     handleSubmit: handleSubmitSupplier,
@@ -87,12 +96,7 @@ export function GoodsReceiptForm() {
     reset: resetSupplier,
     setError: setSupplierError,
   } = useForm<{ name: string; phone?: string; address?: string; licenseNo?: string }>({
-    resolver: zodResolver(z.object({
-      name: z.string().min(1, 'Supplier name is required'),
-      phone: z.string().optional(),
-      address: z.string().optional(),
-      licenseNo: z.string().optional(),
-    })),
+    resolver: zodResolver(supplierSchema),
     defaultValues: { name: '', phone: '', address: '', licenseNo: '' },
   });
 
@@ -159,7 +163,7 @@ export function GoodsReceiptForm() {
       if (!hasMarkup && !hasCustomPrice) {
         setError(`items.${index}.sellingPrice`, {
           type: 'manual',
-          message: 'Select a markup percentage or enter a custom selling price',
+          message: t('goodsReceipts.selectMarkupOrEnterPrice'),
         });
         hasSellingPriceError = true;
       }
@@ -181,7 +185,7 @@ export function GoodsReceiptForm() {
 
     try {
       const result = await createGoodsReceipt(formData).unwrap();
-      toast.success('Goods receipt created successfully');
+      toast.success(t('goodsReceipts.createdSuccess'));
       router.push(`/goods-receipts/${result.id}`);
     } catch (err: unknown) {
       const apiError = err as { data?: { message?: string; errors?: Record<string, string[]> } };
@@ -212,14 +216,14 @@ export function GoodsReceiptForm() {
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold text-foreground">
-            Receipt Details
+            {t('goodsReceipts.receiptDetails')}
           </h2>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-3 space-y-2">
               <FormField
-                label="Supplier"
+                label={t('goodsReceipts.supplier')}
                 required
                 error={errors.supplierId?.message}
               >
@@ -235,14 +239,14 @@ export function GoodsReceiptForm() {
                         value: s.id,
                         label: s.name,
                       }))}
-                      placeholder="Select supplier"
+                      placeholder={t('goodsReceipts.selectSupplier')}
                       footer={
                         <button
                           type="button"
                           onClick={() => setNewSupplierOpen(true)}
                           className="w-full text-left text-sm text-primary hover:underline font-medium"
                         >
-                          + Create new supplier
+                          {t('goodsReceipts.createNewSupplier')}
                         </button>
                       }
                     />
@@ -252,7 +256,7 @@ export function GoodsReceiptForm() {
             </div>
 
             <FormField
-              label="Receipt Date"
+              label={t('goodsReceipts.receiptDate')}
               required
               error={errors.receiptDate?.message}
             >
@@ -265,11 +269,11 @@ export function GoodsReceiptForm() {
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold text-foreground">
-            Payment Terms
+            {t('goodsReceipts.paymentTerms')}
           </h2>
         </CardHeader>
         <CardContent className="space-y-4">
-          <FormField label="Tax Paid" error={errors.taxPaid?.message}>
+          <FormField label={t('goodsReceipts.taxPaid')} error={errors.taxPaid?.message}>
             <Controller
               name="taxPaid"
               control={control}
@@ -277,17 +281,17 @@ export function GoodsReceiptForm() {
                 <Switch
                   checked={field.value}
                   onChange={field.onChange}
-                  label="Tax has been paid for this receipt"
+                  label={t('goodsReceipts.taxPaidDescription')}
                 />
               )}
             />
           </FormField>
 
           <FormField
-            label="Payment Due Date"
+            label={t('goodsReceipts.paymentDueDate')}
             required
             error={errors.paymentDueDateType?.message}
-            description="How long after the receipt date is payment due?"
+            description={t('goodsReceipts.paymentDueDateDescription')}
           >
             <Controller
               name="paymentDueDateType"
@@ -305,7 +309,7 @@ export function GoodsReceiptForm() {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a payment term" />
+                    <SelectValue placeholder={t('goodsReceipts.selectPaymentTerm')} />
                   </SelectTrigger>
                   <SelectContent>
                     {PAYMENT_DUE_DATE_OPTIONS.map((option) => (
@@ -321,7 +325,7 @@ export function GoodsReceiptForm() {
 
           {watch('paymentDueDateType') === 'other' && (
             <FormField
-              label="Custom Due Date"
+              label={t('goodsReceipts.customDueDate')}
               required
               error={errors.paymentDueDate?.message}
             >
@@ -341,7 +345,7 @@ export function GoodsReceiptForm() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">
-              Line Items
+              {t('goodsReceipts.lineItems')}
             </h2>
             <Button
               type="button"
@@ -358,7 +362,7 @@ export function GoodsReceiptForm() {
               }
             >
               <Plus className="h-4 w-4 mr-1" />
-              Add Item
+              {t('goodsReceipts.addItem')}
             </Button>
           </div>
         </CardHeader>
@@ -383,7 +387,7 @@ export function GoodsReceiptForm() {
 
           <div className="flex justify-end pt-2">
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Total</p>
+              <p className="text-sm text-muted-foreground">{t('common.total')}</p>
               <p className="text-xl font-bold text-foreground">
                 {grandTotal.toLocaleString("en-US", {
                   style: "currency",
@@ -398,7 +402,7 @@ export function GoodsReceiptForm() {
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold text-foreground">
-            Invoice Document
+            {t('goodsReceipts.invoiceDocument')}
           </h2>
         </CardHeader>
         <CardContent>
@@ -415,7 +419,7 @@ export function GoodsReceiptForm() {
 
       <div className="flex gap-3">
         <Button type="submit" isLoading={isLoading}>
-          Create Goods Receipt
+          {t('goodsReceipts.createGoodsReceipt')}
         </Button>
         <Button
           type="button"
@@ -423,34 +427,34 @@ export function GoodsReceiptForm() {
           onClick={() => router.push("/goods-receipts")}
           disabled={isLoading}
         >
-          Cancel
+          {t('common.cancel')}
         </Button>
       </div>
 
       <Dialog open={newSupplierOpen} onOpenChange={setNewSupplierOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Supplier</DialogTitle>
+            <DialogTitle>{t('goodsReceipts.createNewSupplierTitle')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmitSupplier(handleCreateSupplier)} className="space-y-4">
-            <FormField label="Supplier Name" required error={supplierErrors.name?.message}>
+            <FormField label={t('goodsReceipts.supplierName')} required error={supplierErrors.name?.message}>
               <Input {...registerSupplier('name')} placeholder="e.g. HealthPlus Distributors" />
             </FormField>
-            <FormField label="Phone" error={supplierErrors.phone?.message}>
+            <FormField label={t('goodsReceipts.phone')} error={supplierErrors.phone?.message}>
               <Input {...registerSupplier('phone')} placeholder="e.g. +1-555-0103" />
             </FormField>
-            <FormField label="Address" error={supplierErrors.address?.message}>
+            <FormField label={t('goodsReceipts.address')} error={supplierErrors.address?.message}>
               <Input {...registerSupplier('address')} placeholder="e.g. 123 Medical Ave" />
             </FormField>
-            <FormField label="License Number" error={supplierErrors.licenseNo?.message}>
+            <FormField label={t('goodsReceipts.licenseNumber')} error={supplierErrors.licenseNo?.message}>
               <Input {...registerSupplier('licenseNo')} placeholder="e.g. LIC-2026-001" />
             </FormField>
             <DialogFooter>
               <Button type="button" variant="secondary" onClick={() => setNewSupplierOpen(false)}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" isLoading={isCreatingSupplier}>
-                Create Supplier
+                {t('goodsReceipts.createSupplier')}
               </Button>
             </DialogFooter>
           </form>

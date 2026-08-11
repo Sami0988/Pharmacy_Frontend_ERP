@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { useGetSalesReportQuery } from '@/store/api/reports-api-slice';
 import { downloadTablePdf } from '@/lib/pdf';
+import { useTranslations } from '@/lib/i18n';
 import { motion } from 'motion/react';
 import type { SalesReportLine } from '@/types/api';
 
@@ -35,52 +36,8 @@ function getDateRange(range: DateRange): { startDate?: string; endDate?: string 
 const formatETB = (value: number) =>
   value.toLocaleString('en-US', { style: 'currency', currency: 'ETB' });
 
-const columns: Column<SalesReportLine>[] = [
-  {
-    key: 'saleDate',
-    header: 'Date',
-    render: (row) => (
-      <span className="text-muted-foreground">
-        {new Date(row.saleDate).toLocaleDateString()}
-      </span>
-    ),
-  },
-  { key: 'itemName', header: 'Item' },
-  {
-    key: 'batchNo',
-    header: 'Batch',
-    render: (row) => <span className="font-mono text-sm">{row.batchNo}</span>,
-  },
-  {
-    key: 'quantity',
-    header: 'Qty',
-    render: (row) => <span className="font-medium">{row.quantity}</span>,
-  },
-  {
-    key: 'unitPrice',
-    header: 'Unit Price',
-    render: (row) => <span className="text-muted-foreground">{formatETB(row.unitPrice)}</span>,
-  },
-  {
-    key: 'lineTotal',
-    header: 'Total',
-    render: (row) => <span className="font-medium">{formatETB(row.lineTotal)}</span>,
-  },
-  {
-    key: 'paymentMethod',
-    header: 'Payment',
-    render: (row) => (
-      <span className="text-xs text-muted-foreground">{row.paymentMethod}</span>
-    ),
-  },
-  {
-    key: 'soldByName',
-    header: 'Sold By',
-    render: (row) => <span className="text-muted-foreground">{row.soldByName}</span>,
-  },
-];
-
 export function SalesReport() {
+  const { t } = useTranslations();
   const [dateRange, setDateRange] = useState<DateRange>('30d');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -97,17 +54,62 @@ export function SalesReport() {
 
   const summary = response?.summary;
 
+  const columns: Column<SalesReportLine>[] = [
+    {
+      key: 'saleDate',
+      header: t('reports.date'),
+      render: (row) => (
+        <span className="text-muted-foreground">
+          {new Date(row.saleDate).toLocaleDateString()}
+        </span>
+      ),
+    },
+    { key: 'itemName', header: t('reports.item') },
+    {
+      key: 'batchNo',
+      header: t('reports.batch'),
+      render: (row) => <span className="font-mono text-sm">{row.batchNo}</span>,
+    },
+    {
+      key: 'quantity',
+      header: t('reports.qty'),
+      render: (row) => <span className="font-medium">{row.quantity}</span>,
+    },
+    {
+      key: 'unitPrice',
+      header: t('reports.unitPrice'),
+      render: (row) => <span className="text-muted-foreground">{formatETB(row.unitPrice)}</span>,
+    },
+    {
+      key: 'lineTotal',
+      header: t('reports.total'),
+      render: (row) => <span className="font-medium">{formatETB(row.lineTotal)}</span>,
+    },
+    {
+      key: 'paymentMethod',
+      header: t('reports.payment'),
+      render: (row) => (
+        <span className="text-xs text-muted-foreground">{row.paymentMethod}</span>
+      ),
+    },
+    {
+      key: 'soldByName',
+      header: t('reports.soldBy'),
+      render: (row) => <span className="text-muted-foreground">{row.soldByName}</span>,
+    },
+  ];
+
   const handleExportPdf = async () => {
     if (!response?.data?.length) {
-      toast.error('No data to export');
+      toast.error(t('reports.noDataToExport'));
       return;
     }
 
     setIsExporting(true);
     try {
       await downloadTablePdf({
-        title: 'Sales Report',
-        headers: ['Date', 'Item', 'Batch', 'Qty', 'Unit Price', 'Total', 'Payment', 'Sold By'],
+        title: t('reports.title'),
+        headers: [t('reports.date'), t('reports.item'), t('reports.batch'), t('reports.qty'), t('reports.unitPrice'), t('reports.total'), t('reports.payment'), t('reports.soldBy')],
         rows: response.data.map((row) => [
           new Date(row.saleDate).toLocaleDateString(),
           row.itemName,
@@ -119,9 +121,9 @@ export function SalesReport() {
           row.soldByName,
         ]),
       });
-      toast.success('Report exported as PDF');
+      toast.success(t('reports.exportSuccess'));
     } catch {
-      toast.error('Failed to export PDF');
+      toast.error(t('reports.exportFailed'));
     } finally {
       setIsExporting(false);
     }
@@ -139,7 +141,7 @@ export function SalesReport() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Revenue</p>
+              <p className="text-sm text-muted-foreground">{t('reports.revenue')}</p>
             </div>
             <p className="text-2xl font-bold text-foreground">
               {summary ? formatETB(summary.totalRevenue) : '-'}
@@ -150,7 +152,7 @@ export function SalesReport() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Profit</p>
+              <p className="text-sm text-muted-foreground">{t('reports.profit')}</p>
             </div>
             <p className="text-2xl font-bold text-green-600">
               {summary ? formatETB(summary.totalProfit) : '-'}
@@ -161,7 +163,7 @@ export function SalesReport() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Items Sold</p>
+              <p className="text-sm text-muted-foreground">{t('reports.itemsSold')}</p>
             </div>
             <p className="text-2xl font-bold text-foreground">
               {summary?.totalItems ?? '-'}
@@ -172,7 +174,7 @@ export function SalesReport() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <Receipt className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Transactions</p>
+              <p className="text-sm text-muted-foreground">{t('reports.transactions')}</p>
             </div>
             <p className="text-2xl font-bold text-foreground">
               {summary?.transactionCount ?? '-'}
@@ -195,7 +197,7 @@ export function SalesReport() {
                 size="sm"
                 onClick={() => { setDateRange(range); setPage(1); }}
               >
-                {range === 'today' ? 'Today' : range === 'all' ? 'All' : range}
+                {range === 'today' ? t('reports.today') : range === 'all' ? t('reports.all') : range}
               </Button>
             ))}
           </div>
@@ -206,7 +208,7 @@ export function SalesReport() {
             disabled={isExporting}
           >
             <Download className="h-4 w-4 mr-1" />
-            {isExporting ? 'Exporting...' : 'Export PDF'}
+            {isExporting ? t('reports.exporting') : t('reports.exportPdf')}
           </Button>
         </div>
 
@@ -217,7 +219,7 @@ export function SalesReport() {
               data={response?.data ?? []}
               isLoading={isLoading}
               isFetching={isFetching}
-              emptyMessage="No sales data found"
+              emptyMessage={t('reports.noSalesData')}
               keyExtractor={(row) => `${row.saleId}-${row.itemName}-${row.batchNo}`}
               pagination={response ? {
                 ...response.meta,

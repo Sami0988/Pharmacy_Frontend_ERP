@@ -12,7 +12,7 @@ export const itemsApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ['Item'],
   endpoints: (builder) => ({
-    getItems: builder.query<PaginatedResponse<Item>, { search?: string; category?: string; page?: number; limit?: number }>({
+    getItems: builder.query<PaginatedResponse<Item>, { search?: string; category?: string; unit?: string; page?: number; limit?: number }>({
       query: (params) => ({
         url: '/items',
         params,

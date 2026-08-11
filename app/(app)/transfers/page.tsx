@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/Button';
 import { useGetTransfersQuery } from '@/store/api/transfers-api-slice';
 import { useGetItemsQuery } from '@/store/api/items-api-slice';
 import { TransfersTable } from '@/components/transfers/TransfersTable';
+import { useTranslations } from '@/lib/i18n';
 import { motion } from 'motion/react';
 import { SearchInput } from '@/components/ui/SearchInput';
 
 export default function TransfersPage() {
+  const { t } = useTranslations();
   const [itemFilter, setItemFilter] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -48,13 +50,13 @@ export default function TransfersPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Transfers</h1>
-          <p className="text-sm text-muted-foreground">Store → Dispatcher transfer history</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('transfers.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('transfers.description')}</p>
         </div>
         <Link href="/transfers/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
-            New Transfer
+            {t('transfers.newTransfer')}
           </Button>
         </Link>
       </motion.div>
@@ -66,7 +68,7 @@ export default function TransfersPage() {
       >
         <SearchInput
           onSearch={handleSearch}
-          placeholder="Filter by item..."
+          placeholder={t('transfers.filterByItem')}
           className="max-w-md"
         />
       </motion.div>

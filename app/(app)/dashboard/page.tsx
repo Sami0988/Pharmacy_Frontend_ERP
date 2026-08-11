@@ -67,7 +67,6 @@ const saleColumns: Column<Sale>[] = [
       <ActionIconGroup
         actions={[
           { icon: 'view', href: `/sales/${sale.id}`, label: 'View' },
-          { icon: 'print', label: 'Print', onClick: () => window.print() },
         ]}
       />
     ),
@@ -114,14 +113,14 @@ export default function DashboardPage() {
        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4 }}>
         <GreetingBanner
           title={`${greetingTime}, ${user?.name ?? t('dashboard.admin')} 👋`}
-          statusText="All systems operational"
-          description="Monitor inventory levels, track medicine sales, manage prescriptions, and ensure smooth pharmacy operations from one centralized dashboard."
+          statusText={t('dashboard.allSystemsOperational')}
+          description={t('dashboard.description')}
           transactionCount={todaySales.transactionCount}
           compliance={summary?.compliance ?? '98%'}
           primaryActionHref="/reports"
-          primaryActionLabel="Generate Report"
+          primaryActionLabel={t('dashboard.generateReport')}
           secondaryActionHref="/items/new"
-          secondaryActionLabel="Add Medicine"
+          secondaryActionLabel={t('dashboard.addMedicine')}
         />
       </motion.div>
 

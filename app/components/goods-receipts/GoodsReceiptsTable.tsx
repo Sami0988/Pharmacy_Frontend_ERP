@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import type { GoodsReceipt, SupplierBalanceSummary } from '@/types/api';
+import { useTranslations } from '@/lib/i18n';
 import type { PaginationMeta } from '@/components/ui/PaginationControls';
 
 interface GoodsReceiptsTableProps {
@@ -18,50 +19,6 @@ interface GoodsReceiptsTableProps {
   };
 }
 
-const columns: Column<GoodsReceipt & { paymentStatus?: 'paid' | 'partial' | 'unpaid' }>[] = [
-  { key: 'grnNumber', header: 'GRN Number' },
-  { key: 'supplierName', header: 'Supplier' },
-  {
-    key: 'receiptDate',
-    header: 'Receipt Date',
-    render: (g) => new Date(g.receiptDate).toLocaleDateString(),
-  },
-  {
-    key: 'totalCost',
-    header: 'Total Cost',
-    render: (g) =>
-      g.totalCost.toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'ETB',
-      }),
-  },
-  {
-    key: 'paymentStatus',
-    header: 'Payment Status',
-    render: (g) => {
-      if (!g.paymentStatus) return <Badge variant="secondary">Unknown</Badge>;
-      if (g.paymentStatus === 'paid')
-        return <Badge variant="success">Paid</Badge>;
-      if (g.paymentStatus === 'partial')
-        return <Badge variant="secondary">Partial</Badge>;
-      return <Badge variant="danger">Unpaid</Badge>;
-    },
-  },
-  {
-    key: 'actions',
-    header: 'Actions',
-    render: (g) => (
-      <Link
-        href={`/goods-receipts/${g.id}`}
-        className="text-primary hover:text-primary/80 font-medium"
-        onClick={(e) => e.stopPropagation()}
-      >
-        View
-      </Link>
-    ),
-  },
-];
-
 export function GoodsReceiptsTable({
   data,
   isLoading,
@@ -70,6 +27,7 @@ export function GoodsReceiptsTable({
   pagination,
 }: GoodsReceiptsTableProps) {
   const router = useRouter();
+  const { t } = useTranslations();
 
   const balanceMap = new Map(
     supplierBalances.map((b) => [b.supplierId, b])
@@ -88,6 +46,50 @@ export function GoodsReceiptsTable({
     return { ...receipt, paymentStatus };
   });
 
+  const columns: Column<GoodsReceipt & { paymentStatus?: 'paid' | 'partial' | 'unpaid' }>[] = [
+    { key: 'grnNumber', header: t('goodsReceipts.grnNumber') },
+    { key: 'supplierName', header: t('goodsReceipts.supplier') },
+    {
+      key: 'receiptDate',
+      header: t('goodsReceipts.receiptDate'),
+      render: (g) => new Date(g.receiptDate).toLocaleDateString(),
+    },
+    {
+      key: 'totalCost',
+      header: t('goodsReceipts.totalCost'),
+      render: (g) =>
+        g.totalCost.toLocaleString('en-US', {
+          style: 'currency',
+          currency: 'ETB',
+        }),
+    },
+    {
+      key: 'paymentStatus',
+      header: t('goodsReceipts.paymentStatus'),
+      render: (g) => {
+        if (!g.paymentStatus) return <Badge variant="secondary">{t('goodsReceipts.unknown')}</Badge>;
+        if (g.paymentStatus === 'paid')
+          return <Badge variant="success">{t('goodsReceipts.paid')}</Badge>;
+        if (g.paymentStatus === 'partial')
+          return <Badge variant="secondary">{t('goodsReceipts.partial')}</Badge>;
+        return <Badge variant="danger">{t('goodsReceipts.unpaid')}</Badge>;
+      },
+    },
+    {
+      key: 'actions',
+      header: t('common.actions'),
+      render: (g) => (
+        <Link
+          href={`/goods-receipts/${g.id}`}
+          className="text-primary hover:text-primary/80 font-medium"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {t('goodsReceipts.view')}
+        </Link>
+      ),
+    },
+  ];
+
   return (
     <DataTable
       columns={columns}
@@ -95,7 +97,7 @@ export function GoodsReceiptsTable({
       isLoading={isLoading}
       isFetching={isFetching}
       pagination={pagination}
-      emptyMessage="No goods receipts found"
+      emptyMessage={t('goodsReceipts.noGrns')}
       keyExtractor={(g) => g.id}
       onRowClick={(g) => router.push(`/goods-receipts/${g.id}`)}
     />

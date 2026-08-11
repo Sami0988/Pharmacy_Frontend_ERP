@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { useTranslations } from '@/lib/i18n';
 
 interface SparklinePoint {
   date: string;
@@ -32,6 +33,8 @@ export function StatCardWithSparkline({
   className,
   index = 0,
 }: StatCardWithSparklineProps) {
+  const { t } = useTranslations();
+
   if (isLoading) {
     return (
       <div className={cn('rounded-2xl border border-border bg-card p-6 shadow-soft', className)}>
@@ -84,7 +87,7 @@ export function StatCardWithSparkline({
           </ResponsiveContainer>
         ) : (
           <div className="flex h-full items-center justify-center rounded-2xl bg-muted/60 text-xs text-muted-foreground">
-            No trend data
+            {t('dashboard.noTrendAvailable')}
           </div>
         )}
       </div>

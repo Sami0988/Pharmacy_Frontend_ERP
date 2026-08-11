@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { useGetExpiringBatchesQuery } from '@/store/api/reports-api-slice';
+import { useTranslations } from '@/lib/i18n';
 import { motion } from 'motion/react';
 import type { ExpiryBatch } from '@/types/api';
 
@@ -16,13 +17,6 @@ interface ExpiryRow extends ExpiryBatch {
   daysUntilExpiry: number;
   status: ExpiryStatus;
 }
-
-const tabs = [
-  { key: 'all', label: 'All', icon: Filter },
-  { key: 'expired', label: 'Expired', icon: AlertTriangle },
-  { key: 'near_expiry', label: 'Near Expiry (30 days)', icon: Clock },
-  { key: 'ok', label: 'OK', icon: CheckCircle },
-];
 
 function getDaysUntilExpiry(expiryDate: string): number {
   const expiry = new Date(expiryDate);
@@ -38,81 +32,15 @@ function getStatus(daysUntilExpiry: number): ExpiryStatus {
   return 'ok';
 }
 
-function getStatusBadge(status: ExpiryStatus) {
-  switch (status) {
-    case 'expired':
-      return <Badge variant="danger">Expired</Badge>;
-    case 'near_expiry':
-      return <Badge variant="warning">Near Expiry</Badge>;
-    case 'ok':
-      return <Badge variant="secondary">OK</Badge>;
-  }
-}
-
-const columns: Column<ExpiryRow>[] = [
-  {
-    key: 'itemName',
-    header: 'Item',
-  },
-  {
-    key: 'batchNo',
-    header: 'Batch No',
-    render: (row) => <span className="font-mono text-sm">{row.batchNo}</span>,
-  },
-  {
-    key: 'locationName',
-    header: 'Location',
-    render: (row) => <span className="text-muted-foreground">{row.locationName}</span>,
-  },
-  {
-    key: 'expiryDate',
-    header: 'Expiry Date',
-    render: (row) => (
-      <span className={row.status === 'expired' ? 'text-destructive font-medium' : row.status === 'near_expiry' ? 'text-yellow-600 font-medium' : ''}>
-        {new Date(row.expiryDate).toLocaleDateString()}
-      </span>
-    ),
-  },
-  {
-    key: 'daysUntilExpiry',
-    header: 'Days Left',
-    render: (row) => {
-      const color = row.daysUntilExpiry < 0 ? 'text-destructive' : row.daysUntilExpiry <= 30 ? 'text-yellow-600' : 'text-muted-foreground';
-      return (
-        <span className={`font-medium ${color}`}>
-          {row.daysUntilExpiry < 0 ? `${Math.abs(row.daysUntilExpiry)}d overdue` : `${row.daysUntilExpiry}d`}
-        </span>
-      );
-    },
-  },
-  {
-    key: 'quantity',
-    header: 'Qty',
-    render: (row) => <span className="font-medium">{row.quantity}</span>,
-  },
-  {
-    key: 'unitCost',
-    header: 'Unit Cost',
-    render: (row) => (
-      <span className="text-muted-foreground">
-        {row.unitCost.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}
-      </span>
-    ),
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    render: (row) => getStatusBadge(row.status),
-  },
-];
-
 export default function ExpiryManagementPage() {
+  const { t } = useTranslations();
   const [activeTab, setActiveTab] = useState('all');
   const [withinDays, setWithinDays] = useState(90);
-  const { data: batches, isLoading } = useGetExpiringBatchesQuery({ withinDays });
+  const { data: response, isLoading } = useGetExpiringBatchesQuery({ withinDays });
+  const batches = response?.data ?? [];
 
   const expiryRows = useMemo(() => {
-    if (!batches) return [];
+    if (!batches.length) return [];
     return batches
       .map((batch) => {
         const daysUntilExpiry = getDaysUntilExpiry(batch.expiryDate);
@@ -134,6 +62,81 @@ export default function ExpiryManagementPage() {
     ok: expiryRows.filter((r) => r.status === 'ok').length,
   }), [expiryRows]);
 
+  const tabs = [
+    { key: 'all', label: t('expiryManagement.all'), icon: Filter },
+    { key: 'expired', label: t('expiryManagement.expired'), icon: AlertTriangle },
+    { key: 'near_expiry', label: t('expiryManagement.nearExpiryDays'), icon: Clock },
+    { key: 'ok', label: t('expiryManagement.ok'), icon: CheckCircle },
+  ];
+
+  function getStatusBadge(status: ExpiryStatus) {
+    switch (status) {
+      case 'expired':
+        return <Badge variant="danger">{t('expiryManagement.expired')}</Badge>;
+      case 'near_expiry':
+        return <Badge variant="danger">{t('expiryManagement.nearExpiry')}</Badge>;
+      case 'ok':
+        return <Badge variant="secondary">{t('expiryManagement.ok')}</Badge>;
+    }
+  }
+
+  const columns: Column<ExpiryRow>[] = [
+    {
+      key: 'itemName',
+      header: t('expiryManagement.item'),
+    },
+    {
+      key: 'batchNo',
+      header: t('expiryManagement.batchNo'),
+      render: (row) => <span className="font-mono text-sm">{row.batchNo}</span>,
+    },
+    {
+      key: 'locationName',
+      header: t('expiryManagement.location'),
+      render: (row) => <span className="text-muted-foreground">{row.locationName}</span>,
+    },
+    {
+      key: 'expiryDate',
+      header: t('expiryManagement.expiryDate'),
+      render: (row) => (
+        <span className={row.status === 'expired' ? 'text-destructive font-medium' : row.status === 'near_expiry' ? 'text-yellow-600 font-medium' : ''}>
+          {new Date(row.expiryDate).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      key: 'daysUntilExpiry',
+      header: t('expiryManagement.daysLeft'),
+      render: (row) => {
+        const color = row.daysUntilExpiry < 0 ? 'text-destructive' : row.daysUntilExpiry <= 30 ? 'text-yellow-600' : 'text-muted-foreground';
+        return (
+          <span className={`font-medium ${color}`}>
+            {row.daysUntilExpiry < 0 ? `${Math.abs(row.daysUntilExpiry)}d ${t('expiryManagement.overdue')}` : `${row.daysUntilExpiry}d`}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'quantity',
+      header: t('expiryManagement.qty'),
+      render: (row) => <span className="font-medium">{row.quantity}</span>,
+    },
+    {
+      key: 'unitCost',
+      header: t('expiryManagement.unitCost'),
+      render: (row) => (
+        <span className="text-muted-foreground">
+          {row.unitCost.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      header: t('expiryManagement.status'),
+      render: (row) => getStatusBadge(row.status),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <motion.div
@@ -141,8 +144,8 @@ export default function ExpiryManagementPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Expiry Management</h1>
-        <p className="text-sm text-muted-foreground">Monitor and manage product expiry dates</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('expiryManagement.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('expiryManagement.description')}</p>
       </motion.div>
 
       <motion.div
@@ -153,25 +156,25 @@ export default function ExpiryManagementPage() {
       >
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Total Batches</p>
+            <p className="text-sm text-muted-foreground">{t('expiryManagement.totalBatches')}</p>
             <p className="text-2xl font-bold text-foreground">{stats.total}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Expired</p>
+            <p className="text-sm text-muted-foreground">{t('expiryManagement.expired')}</p>
             <p className="text-2xl font-bold text-destructive">{stats.expired}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Near Expiry</p>
+            <p className="text-sm text-muted-foreground">{t('expiryManagement.nearExpiry')}</p>
             <p className="text-2xl font-bold text-yellow-600">{stats.nearExpiry}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">OK</p>
+            <p className="text-sm text-muted-foreground">{t('expiryManagement.ok')}</p>
             <p className="text-2xl font-bold text-green-600">{stats.ok}</p>
           </CardContent>
         </Card>
@@ -197,7 +200,7 @@ export default function ExpiryManagementPage() {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Window:</span>
+            <span className="text-sm text-muted-foreground">{t('expiryManagement.window')}:</span>
             {[30, 60, 90].map((days) => (
               <Button
                 key={days}
@@ -217,7 +220,7 @@ export default function ExpiryManagementPage() {
               columns={columns}
               data={filteredRows}
               isLoading={isLoading}
-              emptyMessage="No expiry data found"
+              emptyMessage={t('expiryManagement.noExpiryData')}
               keyExtractor={(row) => row.batchId}
             />
           </CardContent>

@@ -15,19 +15,7 @@ import {
   useUpdateItemMutation,
   useGetItemQuery,
 } from '@/store/api/items-api-slice';
-
-const itemSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  genericName: z.string().optional(),
-  category: z.string().optional(),
-  unit: z.string().min(1, 'Unit is required'),
-  reorderLevel: z.coerce.number({ invalid_type_error: 'Reorder level must be a number' })
-    .int('Reorder level must be a whole number')
-    .nonnegative('Must be non-negative'),
-  isControlledSubstance: z.boolean(),
-});
-
-type ItemFormData = z.infer<typeof itemSchema>;
+import { useTranslations } from '@/lib/i18n';
 
 interface ItemFormProps {
   itemId?: string;
@@ -35,7 +23,21 @@ interface ItemFormProps {
 
 export function ItemForm({ itemId }: ItemFormProps) {
   const router = useRouter();
+  const { t } = useTranslations();
   const isEditing = !!itemId;
+
+  const itemSchema = z.object({
+    name: z.string().min(1, t('items.nameRequired')),
+    genericName: z.string().optional(),
+    category: z.string().optional(),
+    unit: z.string().min(1, t('items.unitRequired')),
+    reorderLevel: z.number({ error: t('items.reorderNumber') })
+      .int(t('items.reorderWhole'))
+      .nonnegative(t('items.reorderNonNegative')),
+    isControlledSubstance: z.boolean(),
+  });
+
+  type ItemFormData = z.infer<typeof itemSchema>;
 
   const { data: item, isLoading: isLoadingItem } = useGetItemQuery(itemId!, {
     skip: !isEditing,
@@ -79,10 +81,10 @@ export function ItemForm({ itemId }: ItemFormProps) {
     try {
       if (isEditing) {
         await updateItem({ id: itemId!, body: data }).unwrap();
-        toast.success('Item updated successfully');
+        toast.success(t('items.updatedSuccess'));
       } else {
         await createItem(data).unwrap();
-        toast.success('Item created successfully');
+        toast.success(t('items.createdSuccess'));
       }
       router.push('/items');
     } catch (err: unknown) {
@@ -124,7 +126,7 @@ export function ItemForm({ itemId }: ItemFormProps) {
     <Card>
       <CardHeader>
         <h2 className="text-lg font-semibold text-foreground">
-          {isEditing ? 'Edit Item' : 'New Item'}
+          {isEditing ? t('items.editItem') : t('items.newItem')}
         </h2>
       </CardHeader>
       <CardContent>
@@ -135,23 +137,23 @@ export function ItemForm({ itemId }: ItemFormProps) {
             </div>
           )}
 
-          <FormField label="Name" required error={errors.name?.message}>
-            <Input {...register('name')} placeholder="Item name" />
+          <FormField label={t('common.name')} required error={errors.name?.message}>
+            <Input {...register('name')} placeholder={t('items.itemNamePlaceholder')} />
           </FormField>
 
-          <FormField label="Generic Name" error={errors.genericName?.message}>
-            <Input {...register('genericName')} placeholder="Generic name" />
+          <FormField label={t('inventory.genericName')} error={errors.genericName?.message}>
+            <Input {...register('genericName')} placeholder={t('items.genericNamePlaceholder')} />
           </FormField>
 
-          <FormField label="Category" error={errors.category?.message}>
-            <Input {...register('category')} placeholder="Category" />
+          <FormField label={t('inventory.category')} error={errors.category?.message}>
+            <Input {...register('category')} placeholder={t('items.categoryPlaceholder')} />
           </FormField>
 
-          <FormField label="Unit" required error={errors.unit?.message}>
-            <Input {...register('unit')} placeholder="e.g. tablets, ml, pcs" />
+          <FormField label={t('inventory.unit')} required error={errors.unit?.message}>
+            <Input {...register('unit')} placeholder={t('items.unitPlaceholder')} />
           </FormField>
 
-          <FormField label="Reorder Level" error={errors.reorderLevel?.message}>
+          <FormField label={t('inventory.reorderLevel')} error={errors.reorderLevel?.message}>
             <Input
               type="number"
               {...register('reorderLevel', { valueAsNumber: true })}
@@ -159,20 +161,20 @@ export function ItemForm({ itemId }: ItemFormProps) {
             />
           </FormField>
 
-          <FormField label="Controlled Substance" error={errors.isControlledSubstance?.message}>
+          <FormField label={t('items.controlledSubstance')} error={errors.isControlledSubstance?.message}>
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 {...register('isControlledSubstance')}
                 className="h-4 w-4 rounded border-input"
               />
-              <span className="text-sm text-muted-foreground">This is a controlled substance</span>
+              <span className="text-sm text-muted-foreground">{t('items.controlledSubstanceLabel')}</span>
             </label>
           </FormField>
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" isLoading={isLoading}>
-              {isEditing ? 'Update Item' : 'Create Item'}
+              {isEditing ? t('items.updateItem') : t('items.createItem')}
             </Button>
             <Button
               type="button"
@@ -180,7 +182,7 @@ export function ItemForm({ itemId }: ItemFormProps) {
               onClick={() => router.push('/items')}
               disabled={isLoading}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </form>

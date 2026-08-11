@@ -6,8 +6,11 @@ import { MfaSetupCard } from '@/components/auth/MfaSetupCard';
 import { ActiveSessionsCard } from '@/components/auth/ActiveSessionsCard';
 import { LoginHistoryCard } from '@/components/auth/LoginHistoryCard';
 import { ProfileSettingsCard } from '@/components/auth/ProfileSettingsCard';
+import { useTranslations } from '@/lib/i18n';
 
 export default function SecurityPage() {
+  const { t } = useTranslations();
+
   return (
     <div className="space-y-6">
       <motion.div
@@ -15,8 +18,8 @@ export default function SecurityPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">Manage your account security and profile</p>
+        <h1 className="text-2xl font-bold text-foreground">{t('settings.title')}</h1>
+        <p className="text-muted-foreground">{t('settings.description')}</p>
       </motion.div>
 
       <motion.div
@@ -26,8 +29,8 @@ export default function SecurityPage() {
       >
         <Tabs defaultValue="security">
           <TabsList>
-            <TabsTrigger value="security">Security</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="security">{t('settings.security')}</TabsTrigger>
+            <TabsTrigger value="profile">{t('settings.profile')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="security" className="space-y-6 mt-6">

@@ -9,8 +9,10 @@ import { QrScannerModal } from '@/components/traceability/QrScannerModal';
 import { TraceResultCard } from '@/components/traceability/TraceResultCard';
 import { motion } from 'motion/react';
 import { useLazyTraceByBatchNoQuery } from '@/store/api/traceability-api-slice';
+import { useTranslations } from '@/lib/i18n';
 
 export default function TraceabilityPage() {
+  const { t } = useTranslations();
   const [searchValue, setSearchValue] = useState('');
   const [showScanner, setShowScanner] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -41,8 +43,8 @@ export default function TraceabilityPage() {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 mb-3">
           <FileSearch className="h-6 w-6 text-blue-600" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Batch Traceability</h1>
-        <p className="text-sm text-muted-foreground mt-1">Search by batch number or scan a QR code</p>
+        <h1 className="text-2xl font-bold text-foreground">{t('traceability.title')}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t('traceability.subtitle')}</p>
       </motion.div>
 
       {/* Search bar + scan button */}
@@ -62,14 +64,14 @@ export default function TraceabilityPage() {
       {isLoading && (
         <div className="text-center py-8 text-muted-foreground">
           <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent mb-2" />
-          <p className="text-sm">Searching...</p>
+          <p className="text-sm">{t('traceability.searching')}</p>
         </div>
       )}
 
       {/* Error */}
       {error && (
         <div className="text-center py-8">
-          <p className="text-sm text-red-600">Something went wrong. Please try again.</p>
+          <p className="text-sm text-red-600">{t('traceability.error')}</p>
         </div>
       )}
 
@@ -77,7 +79,7 @@ export default function TraceabilityPage() {
       {noResults && (
         <div className="text-center py-8">
           <p className="text-sm text-muted-foreground">
-            No batch found for &ldquo;{searchValue.trim().toLowerCase()}&rdquo;
+            {t('traceability.noResults')} &ldquo;{searchValue.trim().toLowerCase()}&rdquo;
           </p>
         </div>
       )}
@@ -94,7 +96,7 @@ export default function TraceabilityPage() {
           className="space-y-4"
         >
           <p className="text-sm text-muted-foreground text-center">
-            Found {multipleResults.length} batches matching &ldquo;{searchValue.trim()}&rdquo;
+            {t('traceability.foundBatches', { count: multipleResults.length })} &ldquo;{searchValue.trim()}&rdquo;
           </p>
           <div className="grid gap-3 max-w-lg mx-auto">
             {multipleResults.map((result) => (
@@ -105,7 +107,7 @@ export default function TraceabilityPage() {
               >
                 <p className="text-sm font-medium text-foreground">{result.itemName}</p>
                 <p className="text-xs text-muted-foreground">
-                  Batch: {result.batchNumber} · Received: {new Date(result.receiptDate).toLocaleDateString()}
+                  {t('traceability.batch')}: {result.batchNumber} · {t('traceability.received')}: {new Date(result.receiptDate).toLocaleDateString()}
                 </p>
               </Link>
             ))}

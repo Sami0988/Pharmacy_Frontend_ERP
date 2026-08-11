@@ -15,15 +15,7 @@ import {
   useUpdateSupplierMutation,
   useGetSupplierQuery,
 } from '@/store/api/suppliers-api-slice';
-
-const supplierSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  licenseNo: z.string().optional(),
-});
-
-type SupplierFormData = z.infer<typeof supplierSchema>;
+import { useTranslations } from '@/lib/i18n';
 
 interface SupplierFormProps {
   supplierId?: string;
@@ -31,7 +23,17 @@ interface SupplierFormProps {
 
 export function SupplierForm({ supplierId }: SupplierFormProps) {
   const router = useRouter();
+  const { t } = useTranslations();
   const isEditing = !!supplierId;
+
+  const supplierSchema = z.object({
+    name: z.string().min(1, t('suppliers.nameRequired')),
+    phone: z.string().optional(),
+    address: z.string().optional(),
+    licenseNo: z.string().optional(),
+  });
+
+  type SupplierFormData = z.infer<typeof supplierSchema>;
 
   const { data: supplier, isLoading: isLoadingSupplier } = useGetSupplierQuery(supplierId!, {
     skip: !isEditing,
@@ -71,10 +73,10 @@ export function SupplierForm({ supplierId }: SupplierFormProps) {
     try {
       if (isEditing) {
         await updateSupplier({ id: supplierId!, body: data }).unwrap();
-        toast.success('Supplier updated successfully');
+        toast.success(t('suppliers.updatedSuccess'));
       } else {
         await createSupplier(data).unwrap();
-        toast.success('Supplier created successfully');
+        toast.success(t('suppliers.createdSuccess'));
       }
       router.push('/suppliers');
     } catch (err: unknown) {
@@ -116,7 +118,7 @@ export function SupplierForm({ supplierId }: SupplierFormProps) {
     <Card>
       <CardHeader>
         <h2 className="text-lg font-semibold text-foreground">
-          {isEditing ? 'Edit Supplier' : 'New Supplier'}
+          {isEditing ? t('suppliers.editSupplier') : t('suppliers.newSupplier')}
         </h2>
       </CardHeader>
       <CardContent>
@@ -127,25 +129,25 @@ export function SupplierForm({ supplierId }: SupplierFormProps) {
             </div>
           )}
 
-          <FormField label="Name" required error={errors.name?.message}>
-            <Input {...register('name')} placeholder="Supplier name" />
+          <FormField label={t('common.name')} required error={errors.name?.message}>
+            <Input {...register('name')} placeholder={t('suppliers.supplierNamePlaceholder')} />
           </FormField>
 
-          <FormField label="Phone" error={errors.phone?.message}>
-            <Input {...register('phone')} placeholder="Phone number" />
+          <FormField label={t('common.phone')} error={errors.phone?.message}>
+            <Input {...register('phone')} placeholder={t('suppliers.phonePlaceholder')} />
           </FormField>
 
-          <FormField label="Address" error={errors.address?.message}>
-            <Input {...register('address')} placeholder="Address" />
+          <FormField label={t('common.address')} error={errors.address?.message}>
+            <Input {...register('address')} placeholder={t('suppliers.addressPlaceholder')} />
           </FormField>
 
-          <FormField label="License Number" error={errors.licenseNo?.message}>
-            <Input {...register('licenseNo')} placeholder="License number" />
+          <FormField label={t('suppliers.licenseNumber')} error={errors.licenseNo?.message}>
+            <Input {...register('licenseNo')} placeholder={t('suppliers.licensePlaceholder')} />
           </FormField>
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" isLoading={isLoading}>
-              {isEditing ? 'Update Supplier' : 'Create Supplier'}
+              {isEditing ? t('suppliers.updateSupplier') : t('suppliers.createSupplier')}
             </Button>
             <Button
               type="button"
@@ -153,7 +155,7 @@ export function SupplierForm({ supplierId }: SupplierFormProps) {
               onClick={() => router.push('/suppliers')}
               disabled={isLoading}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </form>

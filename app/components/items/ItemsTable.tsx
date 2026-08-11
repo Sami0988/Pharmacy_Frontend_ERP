@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/AlertDialog';
 import { useDeleteItemMutation } from '@/store/api/items-api-slice';
+import { useTranslations } from '@/lib/i18n';
 import type { PaginationMeta } from '@/components/ui/PaginationControls';
 
 interface ItemsTableProps {
@@ -34,6 +35,7 @@ interface ItemsTableProps {
 
 export function ItemsTable({ data, isLoading, isFetching, pagination }: ItemsTableProps) {
   const router = useRouter();
+  const { t } = useTranslations();
   const [deleteItem, { isLoading: isDeleting }] = useDeleteItemMutation();
   const [itemToDelete, setItemToDelete] = useState<Item | null>(null);
 
@@ -41,7 +43,7 @@ export function ItemsTable({ data, isLoading, isFetching, pagination }: ItemsTab
     if (!itemToDelete) return;
     try {
       await deleteItem(itemToDelete.id).unwrap();
-      toast.success('Item deleted successfully');
+      toast.success(t('items.deletedSuccess'));
       setItemToDelete(null);
     } catch {
       // Error handled by RTK Query
@@ -49,24 +51,24 @@ export function ItemsTable({ data, isLoading, isFetching, pagination }: ItemsTab
   };
 
   const columns: Column<Item>[] = [
-    { key: 'name', header: 'Name' },
-    { key: 'genericName', header: 'Generic Name', render: (item) => item.genericName || '-' },
-    { key: 'category', header: 'Category', render: (item) => item.category || '-' },
-    { key: 'unit', header: 'Unit' },
-    { key: 'reorderLevel', header: 'Reorder Level' },
+    { key: 'name', header: t('inventory.itemName') },
+    { key: 'genericName', header: t('inventory.genericName'), render: (item) => item.genericName || '-' },
+    { key: 'category', header: t('inventory.category'), render: (item) => item.category || '-' },
+    { key: 'unit', header: t('inventory.unit') },
+    { key: 'reorderLevel', header: t('inventory.reorderLevel') },
     {
       key: 'isControlledSubstance',
-      header: 'Controlled',
+      header: t('items.controlled'),
       render: (item) =>
         item.isControlledSubstance ? (
-          <Badge variant="danger">Controlled</Badge>
+          <Badge variant="danger">{t('items.controlled')}</Badge>
         ) : (
-          <Badge variant="secondary">No</Badge>
+          <Badge variant="secondary">{t('items.no')}</Badge>
         ),
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: t('common.actions'),
       render: (item) => (
         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
           <Link
@@ -96,7 +98,7 @@ export function ItemsTable({ data, isLoading, isFetching, pagination }: ItemsTab
         isLoading={isLoading}
         isFetching={isFetching}
         pagination={pagination}
-        emptyMessage="No items found"
+        emptyMessage={t('inventory.noItems')}
         keyExtractor={(item) => item.id}
         onRowClick={(item) => router.push(`/items/${item.id}/edit`)}
       />
@@ -104,19 +106,19 @@ export function ItemsTable({ data, isLoading, isFetching, pagination }: ItemsTab
       <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Item</AlertDialogTitle>
+            <AlertDialogTitle>{t('items.deleteItem')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete <span className="font-medium text-foreground">{itemToDelete?.name}</span>? This action will soft-delete the item.
+              {t('items.deleteConfirm')} <span className="font-medium text-foreground">{itemToDelete?.name}</span>? {t('items.deleteWarning')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t('items.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? t('items.deleting') : t('items.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

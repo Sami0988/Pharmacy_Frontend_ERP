@@ -14,18 +14,20 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { useGetItemsQuery } from '@/store/api/items-api-slice';
 import { useGetStockByLocationQuery, useCreateTransferMutation } from '@/store/api/transfers-api-slice';
 import { FefoSuggestionList } from './FefoSuggestionList';
-
-const transferSchema = z.object({
-  itemId: z.string().min(1, 'Item is required'),
-  quantity: z.number().int().positive('Quantity must be a positive integer'),
-});
-
-type TransferFormData = z.infer<typeof transferSchema>;
+import { useTranslations } from '@/lib/i18n';
 
 export function TransferForm() {
   const router = useRouter();
+  const { t } = useTranslations();
   const searchParams = useSearchParams();
   const preselectedItemId = searchParams.get('itemId') || '';
+
+  const transferSchema = z.object({
+    itemId: z.string().min(1, t('transfers.itemRequired')),
+    quantity: z.number().int().positive(t('transfers.quantityPositiveInteger')),
+  });
+
+  type TransferFormData = z.infer<typeof transferSchema>;
 
   const [selectedItemId, setSelectedItemId] = useState(preselectedItemId);
   const [quantity, setQuantity] = useState<number>(0);
@@ -88,7 +90,7 @@ export function TransferForm() {
 
   const onSubmit = async (data: TransferFormData) => {
     if (!selectedBatchId) {
-      setTransferError('Please select a batch from the FEFO suggestions before submitting.');
+      setTransferError(t('transfers.selectBatchFirst'));
       return;
     }
 
@@ -101,7 +103,7 @@ export function TransferForm() {
       }).unwrap();
 
       setTransferSuccess(true);
-      toast.success('Transfer completed successfully');
+      toast.success(t('transfers.createdSuccess'));
       setTimeout(() => {
         router.push('/transfers');
       }, 1500);
@@ -112,7 +114,7 @@ export function TransferForm() {
         setTransferError(apiError.data.message);
         setSelectedBatchId(null);
       } else {
-        setTransferError('Transfer failed. Please try again.');
+        setTransferError(t('transfers.transferFailed'));
       }
     }
   };
@@ -125,9 +127,9 @@ export function TransferForm() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
               <ArrowRight className="h-6 w-6 text-green-600" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground">Transfer Successful</h3>
+            <h3 className="text-lg font-semibold text-foreground">{t('transfers.transferSuccessful')}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Stock has been moved from Store to Dispatcher.
+              {t('transfers.stockMoved')}
             </p>
           </div>
         </CardContent>
@@ -145,14 +147,14 @@ export function TransferForm() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-foreground">Transfer Details</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('transfers.transferDetails')}</h2>
           <p className="text-sm text-muted-foreground">
-            Store → Dispatcher — Select an item and quantity to transfer
+            {t('transfers.transferDescription')}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label="Item" required error={errors.itemId?.message}>
+            <FormField label={t('transfers.item')} required error={errors.itemId?.message}>
               <select
                 {...register('itemId')}
                 onChange={(e) => {
@@ -161,7 +163,7 @@ export function TransferForm() {
                 }}
                 className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               >
-                <option value="">Select item</option>
+                <option value="">{t('transfers.selectItem')}</option>
                 {items?.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name}
@@ -170,7 +172,7 @@ export function TransferForm() {
               </select>
             </FormField>
 
-            <FormField label="Quantity to Transfer" required error={errors.quantity?.message}>
+            <FormField label={t('transfers.quantityToTransfer')} required error={errors.quantity?.message}>
               <Input
                 type="number"
                 {...register('quantity', { valueAsNumber: true })}
@@ -184,16 +186,16 @@ export function TransferForm() {
           {selectedItemStock && (
             <div className="rounded-md bg-background p-3">
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium">Store:</span> {selectedItemStock.storeQuantity} ·{' '}
-                <span className="font-medium">Dispatcher:</span> {selectedItemStock.dispatcherQuantity}
+                <span className="font-medium">{t('transfers.fromStore')}:</span> {selectedItemStock.storeQuantity} ·{' '}
+                <span className="font-medium">{t('transfers.toDispatcher')}:</span> {selectedItemStock.dispatcherQuantity}
               </p>
             </div>
           )}
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="font-medium">Store</span>
+            <span className="font-medium">{t('transfers.fromStore')}</span>
             <ArrowRight className="h-4 w-4" />
-            <span className="font-medium">Dispatcher</span>
+            <span className="font-medium">{t('transfers.toDispatcher')}</span>
           </div>
         </CardContent>
       </Card>
@@ -215,7 +217,7 @@ export function TransferForm() {
           isLoading={isCreating}
           disabled={!selectedBatchId || quantity <= 0}
         >
-          Confirm Transfer
+          {t('transfers.confirmTransfer')}
         </Button>
         <Button
           type="button"
@@ -223,7 +225,7 @@ export function TransferForm() {
           onClick={() => router.push('/transfers')}
           disabled={isCreating}
         >
-          Cancel
+          {t('common.cancel')}
         </Button>
       </div>
     </form>

@@ -6,12 +6,14 @@ import { cn } from '@/lib/utils';
 import { useGetItemsQuery } from '@/store/api/items-api-slice';
 import { useGetStockByLocationQuery } from '@/store/api/transfers-api-slice';
 import type { Item } from '@/types/api';
+import { useTranslations } from '@/lib/i18n';
 
 interface PosItemSearchProps {
   onAddItem: (item: Item, dispatcherQuantity: number, sellingPrice: number) => void;
 }
 
 export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
+  const { t } = useTranslations();
   const inputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +60,7 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
           }}
           onFocus={() => setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-          placeholder="Search items to add..."
+          placeholder={t('sales.searchItems')}
           className={cn(
             'flex h-12 w-full rounded-md border border-input bg-card pl-10 pr-3 py-2 text-base',
             'placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
@@ -103,7 +105,7 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
                       Dispatcher: {dispatcherQty}
                     </p>
                     {outOfStock && (
-                      <p className="text-xs text-amber-600">Out of stock</p>
+                      <p className="text-xs text-amber-600">{t('sales.outOfStock')}</p>
                     )}
                   </div>
                 </button>

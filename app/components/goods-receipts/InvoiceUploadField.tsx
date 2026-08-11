@@ -2,6 +2,7 @@
 
 import { FileUploadInput } from '@/components/ui/FileUploadInput';
 import { FormField } from '@/components/ui/FormField';
+import { useTranslations } from '@/lib/i18n';
 
 interface InvoiceUploadFieldProps {
   onChange: (file: File | null) => void;
@@ -10,10 +11,12 @@ interface InvoiceUploadFieldProps {
 }
 
 export function InvoiceUploadField({ onChange, value, error }: InvoiceUploadFieldProps) {
+  const { t } = useTranslations();
+
   return (
-    <FormField label="Invoice Document" required error={error}>
+    <FormField label={t('goodsReceipts.invoiceDocument')} required error={error}>
       <p className="text-xs text-muted-foreground mb-2">
-        Upload the supplier&apos;s invoice (PDF, JPG, PNG — max 10MB)
+        {t('goodsReceipts.invoiceDescription')}
       </p>
       <FileUploadInput
         accept=".pdf,.jpg,.jpeg,.png"

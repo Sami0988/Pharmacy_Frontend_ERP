@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useGetFefoSuggestionsQuery } from '@/store/api/transfers-api-slice';
 import type { FefoSuggestion } from '@/types/api';
+import { useTranslations } from '@/lib/i18n';
 
 interface FefoSuggestionListProps {
   itemId: string;
@@ -58,6 +59,7 @@ export function FefoSuggestionList({
   selectedBatchId,
   onSelectBatch,
 }: FefoSuggestionListProps) {
+  const { t } = useTranslations();
   const { data: response, isLoading, refetch } = useGetFefoSuggestionsQuery(
     { itemId, quantityNeeded },
     { skip: !itemId || quantityNeeded <= 0 }
@@ -95,7 +97,7 @@ export function FefoSuggestionList({
       <Card>
         <CardContent className="py-8">
           <p className="text-center text-muted-foreground">
-            No available batches found at Store for this item.
+            {t('transfers.noBatchesFound')}
           </p>
         </CardContent>
       </Card>
@@ -110,29 +112,29 @@ export function FefoSuggestionList({
       <CardHeader>
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-foreground">
-            Store → Dispatcher — FEFO Suggestion
+            {t('transfers.fefoSuggestionTitle')}
           </h3>
           <Button variant="ghost" size="sm" onClick={() => refetch()}>
-            Refresh
+            {t('transfers.refresh')}
           </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {!canFulfill && (
           <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
-            Insufficient stock at Store. Available: {totalAvailable}, Needed: {quantityNeeded}.
+            {t('transfers.insufficientStock').replace('{available}', String(totalAvailable)).replace('{needed}', String(quantityNeeded))}
           </div>
         )}
 
         <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">
-          The system recommends transferring from the soonest-expiring batches first (FEFO).
+          {t('transfers.fefoRecommendation')}
           {canFulfill && allocations.length > 1 && (
-            <> This transfer will be split across {allocations.length} batch(es).</>
+            <> {t('transfers.splitAcrossBatches').replace('{count}', String(allocations.length))}</>
           )}
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium text-secondary-foreground">Available Batches at Store:</p>
+          <p className="text-sm font-medium text-secondary-foreground">{t('transfers.availableBatchesAtStore')}</p>
           {batchSuggestions.map((batch) => {
             const daysUntilExpiry = getDaysUntilExpiry(batch.expiryDate);
             const isRecommended = batch.batchId === recommendedBatchId;
@@ -157,22 +159,22 @@ export function FefoSuggestionList({
                         {batch.batchNo}
                       </span>
                       {isRecommended && (
-                        <Badge variant="success">Recommended</Badge>
+                        <Badge variant="success">{t('transfers.recommended')}</Badge>
                       )}
                       <Badge variant={getExpiryBadgeVariant(daysUntilExpiry)}>
-                        {daysUntilExpiry}d to expiry
+                        {t('transfers.daysToExpiry').replace('{days}', String(daysUntilExpiry))}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Expires: {new Date(batch.expiryDate).toLocaleDateString()} ·{' '}
-                      Available: {batch.availableQuantity}
+                      {t('transfers.expiresOn')} {new Date(batch.expiryDate).toLocaleDateString()} ·{' '}
+                      {t('transfers.available')}: {batch.availableQuantity}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   {allocation && (
                     <span className="text-sm font-medium text-blue-700">
-                      Transfer {allocation.allocatedQuantity}
+                      {t('transfers.transferQty').replace('{qty}', String(allocation.allocatedQuantity))}
                     </span>
                   )}
                   <Button
@@ -185,7 +187,7 @@ export function FefoSuggestionList({
                       )
                     }
                   >
-                    {isSelected ? 'Selected' : 'Select'}
+                    {isSelected ? t('transfers.selected') : t('transfers.selectItem')}
                   </Button>
                 </div>
               </div>

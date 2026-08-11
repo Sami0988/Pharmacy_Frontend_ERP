@@ -2,6 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { useTranslations } from '@/lib/i18n';
 
 const COLORS = ['#6366f1', '#0ea5e9', '#22c55e', '#f59e0b', '#f97316', '#ec4899'];
 
@@ -16,26 +17,27 @@ interface CategoryDonutChartProps {
 }
 
 export function CategoryDonutChart({ data, isLoading }: CategoryDonutChartProps) {
+  const { t } = useTranslations();
   const totalCount = data.reduce((sum, item) => sum + item.count, 0);
 
   return (
     <Card className="rounded-3xl shadow-soft">
       <CardHeader className="border-b border-border">
-        <CardTitle>Inventory Distribution</CardTitle>
+        <CardTitle>{t('dashboard.inventoryDistribution')}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-[1fr_0.9fr]">
         <div className="min-h-[320px]">
           {isLoading ? (
-            <div className="flex h-full items-center justify-center rounded-3xl bg-muted p-8">Loading chart…</div>
+            <div className="flex h-full items-center justify-center rounded-3xl bg-muted p-8">{t('dashboard.loadingChart')}</div>
           ) : data.length === 0 ? (
             <div className="flex h-full items-center justify-center rounded-3xl bg-muted p-8 text-sm text-muted-foreground">
-              No category data available
+              {t('dashboard.noCategoryData')}
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Tooltip
-                  formatter={(value) => [`${Number(value ?? 0).toLocaleString()}`, 'Units']}
+                  formatter={(value) => [`${Number(value ?? 0).toLocaleString()}`, t('dashboard.units')]}
                   contentStyle={{
                     borderRadius: 12,
                     border: '1px solid rgba(148,163,184,0.2)',
@@ -71,7 +73,7 @@ export function CategoryDonutChart({ data, isLoading }: CategoryDonutChartProps)
                   />
                   <div>
                     <p className="text-sm font-medium text-foreground">{item.category}</p>
-                    <p className="text-xs text-muted-foreground">{percent}% of stock</p>
+                    <p className="text-xs text-muted-foreground">{percent}{t('dashboard.percentOfStock')}</p>
                   </div>
                 </div>
                 <p className="text-sm font-semibold text-foreground">{item.count.toLocaleString()}</p>

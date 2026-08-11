@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useGetSubstitutesQuery } from '@/store/api/items-api-slice';
 import { useGetStockByLocationQuery } from '@/store/api/transfers-api-slice';
 import type { Item } from '@/types/api';
+import { useTranslations } from '@/lib/i18n';
 
 interface SubstituteSuggestionModalProps {
   open: boolean;
@@ -21,6 +22,7 @@ export function SubstituteSuggestionModal({
   onClose,
   onSelectSubstitute,
 }: SubstituteSuggestionModalProps) {
+  const { t } = useTranslations();
   const { data: substitutes, isLoading } = useGetSubstitutesQuery(item?.id || '', {
     skip: !item,
   });
@@ -51,7 +53,7 @@ export function SubstituteSuggestionModal({
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-card rounded-lg shadow-xl max-w-lg w-full mx-4 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-foreground">Out of Stock</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('sales.outOfStockTitle')}</h3>
           <button onClick={onClose} className="p-1 hover:bg-secondary rounded">
             <X className="h-5 w-5" />
           </button>
@@ -59,7 +61,7 @@ export function SubstituteSuggestionModal({
 
         <div className="rounded-md bg-amber-50 p-3 mb-4">
           <p className="text-sm text-amber-800">
-            <span className="font-medium">{item.name}</span> has zero Dispatcher stock.
+            <span className="font-medium">{item.name}</span> {t('sales.zeroDispatcherStock')}
           </p>
         </div>
 
@@ -70,18 +72,18 @@ export function SubstituteSuggestionModal({
         ) : !hasSubstitutes ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              No substitutes available for this item. A transfer from Store is needed.
+              {t('sales.noSubstitutesAvailable')}
             </p>
             <Link href={`/transfers/new?itemId=${item.id}`}>
-              <Button onClick={onClose}>Transfer from Store</Button>
+              <Button onClick={onClose}>{t('sales.transferFromStore')}</Button>
             </Link>
           </div>
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
               {substitutesInStock.length > 0
-                ? 'These substitutes are available at Dispatcher:'
-                : 'Substitutes found, but none have Dispatcher stock:'}
+                ? t('sales.substitutesAvailable')
+                : t('sales.substitutesFoundNoneInStock')}
             </p>
 
             <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -101,7 +103,7 @@ export function SubstituteSuggestionModal({
                   </div>
                   <div className="flex items-center gap-2">
                     {sub.dispatcherQuantity === 0 ? (
-                      <Badge variant="secondary">No Stock</Badge>
+                      <Badge variant="secondary">{t('sales.noStock')}</Badge>
                     ) : (
                       <Button
                         size="sm"
@@ -110,7 +112,7 @@ export function SubstituteSuggestionModal({
                           onClose();
                         }}
                       >
-                        Add to Cart
+                        {t('sales.addToCart')}
                       </Button>
                     )}
                   </div>
@@ -122,7 +124,7 @@ export function SubstituteSuggestionModal({
 
         <div className="mt-4 flex justify-end">
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </div>

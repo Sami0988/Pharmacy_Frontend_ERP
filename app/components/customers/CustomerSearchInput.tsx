@@ -5,6 +5,7 @@ import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGetCustomersQuery } from '@/store/api/customers-api-slice';
 import type { Customer } from '@/types/api';
+import { useTranslations } from '@/lib/i18n';
 
 interface CustomerSearchInputProps {
   onSelectCustomer: (customer: Customer) => void;
@@ -21,6 +22,7 @@ export function CustomerSearchInput({
   error,
   disabled,
 }: CustomerSearchInputProps) {
+  const { t } = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
 
   const displayValue = selectedCustomer?.name || '';
@@ -56,7 +58,7 @@ export function CustomerSearchInput({
           onChange={() => handleChange()}
           onFocus={() => !selectedCustomer && setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-          placeholder="Search customer by name or phone..."
+          placeholder={t('sales.searchCustomer')}
           disabled={disabled}
           readOnly={!!selectedCustomer}
           className={cn(

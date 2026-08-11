@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { useGetDeadStockQuery } from '@/store/api/reports-api-slice';
 import { downloadTablePdf } from '@/lib/pdf';
+import { useTranslations } from '@/lib/i18n';
 import { motion } from 'motion/react';
 import type { DeadStockItem } from '@/types/api';
 
@@ -16,36 +17,8 @@ type Threshold = 30 | 60 | 90 | 'all';
 const formatETB = (value: number) =>
   value.toLocaleString('en-US', { style: 'currency', currency: 'ETB' });
 
-const columns: Column<DeadStockItem>[] = [
-  { key: 'itemName', header: 'Item' },
-  {
-    key: 'totalQuantityOnHand',
-    header: 'Stock',
-    render: (row) => <span className="font-medium">{row.totalQuantityOnHand}</span>,
-  },
-  {
-    key: 'tiedUpValue',
-    header: 'Tied-Up Value',
-    render: (row) => (
-      <span className="font-medium text-red-600 dark:text-red-400">
-        {formatETB(row.tiedUpValue)}
-      </span>
-    ),
-  },
-  {
-    key: 'daysSinceLastSale',
-    header: 'Days Since Sale',
-    render: (row) => (
-      <span className="text-muted-foreground">
-        {row.daysSinceLastSale !== null
-          ? `${row.daysSinceLastSale}d`
-          : 'Never sold'}
-      </span>
-    ),
-  },
-];
-
 export function DeadStockReport() {
+  const { t } = useTranslations();
   const [threshold, setThreshold] = useState<Threshold>('all');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -60,27 +33,56 @@ export function DeadStockReport() {
   const totalValue = response?.data?.reduce((sum, item) => sum + item.tiedUpValue, 0) ?? 0;
   const totalItems = response?.meta?.totalItems ?? 0;
 
+  const columns: Column<DeadStockItem>[] = [
+    { key: 'itemName', header: t('reports.item') },
+    {
+      key: 'totalQuantityOnHand',
+      header: t('reports.stock'),
+      render: (row) => <span className="font-medium">{row.totalQuantityOnHand}</span>,
+    },
+    {
+      key: 'tiedUpValue',
+      header: t('reports.tiedUpValue'),
+      render: (row) => (
+        <span className="font-medium text-red-600 dark:text-red-400">
+          {formatETB(row.tiedUpValue)}
+        </span>
+      ),
+    },
+    {
+      key: 'daysSinceLastSale',
+      header: t('reports.daysSinceSale'),
+      render: (row) => (
+        <span className="text-muted-foreground">
+          {row.daysSinceLastSale !== null
+            ? `${row.daysSinceLastSale}d`
+            : t('reports.neverSold')}
+        </span>
+      ),
+    },
+  ];
+
   const handleExportPdf = async () => {
     if (!response?.data?.length) {
-      toast.error('No data to export');
+      toast.error(t('reports.noDataToExport'));
       return;
     }
 
     setIsExporting(true);
     try {
       await downloadTablePdf({
-        title: 'Dead Stock Report',
-        headers: ['Item', 'Stock', 'Tied-Up Value', 'Days Since Last Sale'],
+        title: t('reports.deadStock'),
+        headers: [t('reports.item'), t('reports.stock'), t('reports.tiedUpValue'), t('reports.daysSinceSale')],
         rows: response.data.map((row) => [
           row.itemName,
           row.totalQuantityOnHand.toString(),
           row.tiedUpValue.toFixed(2),
-          row.daysSinceLastSale !== null ? `${row.daysSinceLastSale}d` : 'Never sold',
+          row.daysSinceLastSale !== null ? `${row.daysSinceLastSale}d` : t('reports.neverSold'),
         ]),
       });
-      toast.success('Dead stock report exported as PDF');
+      toast.success(t('reports.exportSuccess'));
     } catch {
-      toast.error('Failed to export PDF');
+      toast.error(t('reports.exportFailed'));
     } finally {
       setIsExporting(false);
     }
@@ -98,7 +100,7 @@ export function DeadStockReport() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <PackageX className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Dead Stock Items</p>
+              <p className="text-sm text-muted-foreground">{t('reports.deadStockItems')}</p>
             </div>
             <p className="text-2xl font-bold text-foreground">{totalItems}</p>
           </CardContent>
@@ -107,7 +109,7 @@ export function DeadStockReport() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Total Tied-Up Value</p>
+              <p className="text-sm text-muted-foreground">{t('reports.totalTiedUpValue')}</p>
             </div>
             <p className="text-2xl font-bold text-red-600 dark:text-red-400">
               {formatETB(totalValue)}
@@ -123,15 +125,15 @@ export function DeadStockReport() {
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Threshold:</span>
-            {([30, 60, 90, 'all'] as Threshold[]).map((t) => (
+            <span className="text-sm text-muted-foreground">{t('reports.threshold')}:</span>
+            {([30, 60, 90, 'all'] as Threshold[]).map((t_) => (
               <Button
-                key={t}
-                variant={threshold === t ? 'default' : 'secondary'}
+                key={t_}
+                variant={threshold === t_ ? 'default' : 'secondary'}
                 size="sm"
-                onClick={() => { setThreshold(t); setPage(1); }}
+                onClick={() => { setThreshold(t_); setPage(1); }}
               >
-                {t === 'all' ? 'All' : `${t}d`}
+                {t_ === 'all' ? t('reports.all') : `${t_}d`}
               </Button>
             ))}
           </div>
@@ -142,7 +144,7 @@ export function DeadStockReport() {
             disabled={isExporting}
           >
             <Download className="h-4 w-4 mr-1" />
-            {isExporting ? 'Exporting...' : 'Export PDF'}
+            {isExporting ? t('reports.exporting') : t('reports.exportPdf')}
           </Button>
         </div>
 
@@ -153,7 +155,7 @@ export function DeadStockReport() {
               data={response?.data ?? []}
               isLoading={isLoading}
               isFetching={isFetching}
-              emptyMessage="No dead stock items found"
+              emptyMessage={t('reports.noDeadStockData')}
               keyExtractor={(row) => row.itemId}
               pagination={response ? {
                 ...response.meta,

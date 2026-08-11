@@ -1,177 +1,135 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { User, Upload, Camera } from 'lucide-react';
+import { useRef, useState } from 'react';
+import Image from 'next/image';
+import { Camera, User, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useAuth } from '@/lib/auth/use-auth';
 import { useUpdateNameMutation, useUploadProfileImageMutation } from '@/store/api/auth-api-slice';
+import { useTranslations } from '@/lib/i18n';
 import { toast } from 'sonner';
-
-const nameSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-});
-
-type NameFormData = z.infer<typeof nameSchema>;
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 export function ProfileSettingsCard() {
   const { user, refetch } = useAuth();
-  const [updateName, { isLoading: isUpdatingName }] = useUpdateNameMutation();
-  const [uploadImage, { isLoading: isUploadingImage }] = useUploadProfileImageMutation();
+  const { t } = useTranslations();
+  const [updateName, { isLoading: isUpdating }] = useUpdateNameMutation();
+  const [uploadImage, { isLoading: isUploading }] = useUploadProfileImageMutation();
+  const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<NameFormData>({
-    resolver: zodResolver(nameSchema),
-    defaultValues: { name: user?.name ?? '' },
-  });
-
-  const onNameSubmit = async (data: NameFormData) => {
+  const handleSave = async () => {
+    if (!displayName.trim()) {
+      toast.error('Please enter a display name');
+      return;
+    }
     try {
-      await updateName({ name: data.name }).unwrap();
-      refetch();
-      toast.success('Name updated successfully');
+      await updateName({ displayName: displayName.trim() }).unwrap();
+      await refetch();
+      toast.success(t('settings.nameUpdated'));
     } catch {
-      toast.error('Failed to update name');
+      toast.error(t('settings.nameUpdateFailed'));
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File size must be less than 5MB');
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      toast.error(t('settings.invalidFileType'));
       return;
     }
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error('Only JPEG, PNG, WebP, and GIF images are allowed');
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast.error(t('settings.fileTooLarge'));
       return;
     }
-
-    const reader = new FileReader();
-    reader.onload = () => setPreviewUrl(reader.result as string);
-    reader.readAsDataURL(file);
-  };
-
-  const handleImageUpload = async () => {
-    if (!fileInputRef.current?.files?.[0]) return;
 
     const formData = new FormData();
-    formData.append('file', fileInputRef.current.files[0]);
+    formData.append('image', file);
 
     try {
       await uploadImage(formData).unwrap();
-      refetch();
-      setPreviewUrl(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      toast.success('Profile image updated');
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      await refetch();
+      toast.success(t('settings.imageUploaded'));
     } catch {
-      toast.error('Failed to upload image');
+      toast.error(t('settings.imageUploadFailed'));
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  const imageSrc = previewUrl || user?.imageUrl || undefined;
 
   return (
-    <div className="space-y-6">
-      {/* Display Name Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Display Name</h2>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onNameSubmit)} className="space-y-4">
-            <Input
-              label="Display Name"
-              placeholder="Enter your name"
-              error={errors.name?.message}
-              {...register('name')}
-            />
-            <Button type="submit" isLoading={isUpdatingName}>
-              Save Changes
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Profile Image Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Camera className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Profile Image</h2>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              {previewUrl ? (
-                <AvatarImage src={previewUrl} alt="Preview" />
-              ) : user?.profileImageUrl ? (
-                <AvatarImage src={user.profileImageUrl} alt={user.name} />
-              ) : (
-                <AvatarFallback className="text-lg">
-                  {user?.name ? getInitials(user.name) : '?'}
-                </AvatarFallback>
-              )}
-            </Avatar>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Accepted formats: JPEG, PNG, WebP, GIF (max 5MB)
-              </p>
-              <div className="flex gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploadingImage}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Choose Image
-                </Button>
-                {previewUrl && (
-                  <Button
-                    type="button"
-                    onClick={handleImageUpload}
-                    isLoading={isUploadingImage}
-                  >
-                    Upload
-                  </Button>
-                )}
+    <Card>
+      <CardHeader>
+        <h2 className="text-lg font-semibold">{t('settings.profile')}</h2>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            {imageSrc ? (
+              <Image
+                src={imageSrc}
+                alt={user?.displayName || 'Profile'}
+                className="h-20 w-20 rounded-full object-cover"
+                width={80}
+                height={80}
+              />
+            ) : (
+              <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
+                <User className="h-10 w-10 text-muted-foreground" />
               </div>
-            </div>
+            )}
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full p-0"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          <div>
+            <p className="font-medium">{user?.email}</p>
+            <p className="text-sm text-muted-foreground">{user?.role}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.maxFileSize')} · {t('settings.acceptedFormats')}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Input
+            label={t('settings.displayName')}
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder={t('settings.enterName')}
+          />
+          <Button
+            onClick={handleSave}
+            isLoading={isUpdating || isUploading}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {t('settings.saveChanges')}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

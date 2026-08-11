@@ -38,7 +38,7 @@ interface NavItem {
 export const navKeys: NavItem[] = [
   { href: '/dashboard', key: 'sidebar.dashboard', icon: LayoutDashboard, roles: ['admin', 'store_keeper', 'cashier'] },
   { href: '/inventory', key: 'sidebar.inventoryManagement', icon: Package, roles: ['admin', 'store_keeper'] },
-  { href: '/items', key: 'sidebar.medicineCatalog', icon: Package, roles: ['admin', 'store_keeper'] },
+  { href: '/items', key: 'sidebar.medicineCatalog', icon: Pill, roles: ['admin', 'store_keeper'] },
   { href: '/goods-receipts', key: 'sidebar.goodsReceipts', icon: Receipt, roles: ['admin', 'store_keeper'] },
   { href: '/suppliers', key: 'sidebar.suppliers', icon: Users, roles: ['admin', 'store_keeper'] },
   { href: '/sales', key: 'sidebar.salesPos', icon: ShoppingCart, roles: ['admin', 'cashier'] },

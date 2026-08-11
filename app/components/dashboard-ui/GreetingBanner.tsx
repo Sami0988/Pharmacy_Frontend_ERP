@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { useTranslations } from '@/lib/i18n';
 
 interface GreetingBannerProps {
   title: string;
@@ -29,6 +30,7 @@ export function GreetingBanner({
   secondaryActionLabel,
   className,
 }: GreetingBannerProps) {
+  const { t } = useTranslations();
   return (
     <div
       className={cn(
@@ -57,8 +59,8 @@ export function GreetingBanner({
               </Link>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-white/90">
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2 shadow-sm">{transactionCount.toLocaleString()} transactions today</div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2 shadow-sm">Compliance: {compliance}</div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2 shadow-sm">{transactionCount.toLocaleString()} {t('dashboard.transactionsToday')}</div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2 shadow-sm">{t('dashboard.compliance')}: {compliance}</div>
             </div>
           </div>
         </div>

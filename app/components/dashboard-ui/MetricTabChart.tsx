@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { useTranslations } from '@/lib/i18n';
 import type { RevenueTrendPoint } from '@/types/api';
 
 interface MetricTabChartProps {
@@ -14,36 +15,42 @@ interface MetricTabChartProps {
 const TAB_CONFIG = [
   {
     value: 'revenue',
-    label: 'Revenue',
+    labelKey: 'dashboard.revenue',
     color: '#2563eb',
     format: (value: number | undefined) => `${(value ?? 0).toLocaleString()}`,
   },
   {
     value: 'profit',
-    label: 'Profit',
+    labelKey: 'dashboard.profit',
     color: '#16a34a',
     format: (value: number | undefined) => `${(value ?? 0).toLocaleString()}`,
   },
   {
     value: 'expenses',
-    label: 'Expenses',
+    labelKey: 'dashboard.expenses',
     color: '#f59e0b',
     format: (value: number | undefined) => `${(value ?? 0).toLocaleString()}`,
   },
   {
     value: 'creditSales',
-    label: 'Credit Sales',
+    labelKey: 'dashboard.creditSales',
     color: '#9333ea',
     format: (value: number | undefined) => `${(value ?? 0).toLocaleString()}`,
   },
 ];
 
 export function MetricTabChart({ data }: MetricTabChartProps) {
+  const { t } = useTranslations();
   const [activeTab, setActiveTab] = useState(TAB_CONFIG[0].value);
 
+  const tabs = useMemo(
+    () => TAB_CONFIG.map((tab) => ({ ...tab, label: t(tab.labelKey) })),
+    [t],
+  );
+
   const selectedTab = useMemo(
-    () => TAB_CONFIG.find((tab) => tab.value === activeTab) ?? TAB_CONFIG[0],
-    [activeTab],
+    () => tabs.find((tab) => tab.value === activeTab) ?? tabs[0],
+    [activeTab, tabs],
   );
 
   const chartData = useMemo(
@@ -62,11 +69,11 @@ export function MetricTabChart({ data }: MetricTabChartProps) {
       <CardHeader className="space-y-4 border-b border-border pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <CardTitle className="text-lg">Monthly Revenue Performance</CardTitle>
-            <p className="text-sm text-muted-foreground">Switch between revenue, profit, expenses, and credit sales.</p>
+            <CardTitle className="text-lg">{t('dashboard.monthlyRevenuePerformance')}</CardTitle>
+            <p className="text-sm text-muted-foreground">{t('dashboard.metricTabDescription')}</p>
           </div>
           <div className="flex flex-nowrap items-center gap-3 overflow-x-auto py-1">
-            {TAB_CONFIG.map((tab) => (
+            {tabs.map((tab) => (
               <Button
                 key={tab.value}
                 variant={activeTab === tab.value ? 'default' : 'outline'}
@@ -82,7 +89,7 @@ export function MetricTabChart({ data }: MetricTabChartProps) {
         <div className="rounded-3xl bg-muted p-4 sm:p-5">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Current {selectedTab.label}</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.current')} {selectedTab.label}</p>
               <p className="mt-1 text-3xl font-semibold text-foreground">{selectedTab.format(latestValue)}</p>
             </div>
             <div className="rounded-2xl bg-white/90 px-4 py-3 text-sm font-semibold text-foreground shadow-sm dark:bg-slate-950/65">

@@ -2,12 +2,15 @@
 
 import { ScanBarcode } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useTranslations } from '@/lib/i18n';
 
 interface QrScannerButtonProps {
   onClick: () => void;
 }
 
 export function QrScannerButton({ onClick }: QrScannerButtonProps) {
+  const { t } = useTranslations();
+
   return (
     <Button
       type="button"
@@ -17,7 +20,7 @@ export function QrScannerButton({ onClick }: QrScannerButtonProps) {
       className="flex items-center gap-2"
     >
       <ScanBarcode className="h-5 w-5" />
-      Scan QR
+      {t('traceability.scanQr')}
     </Button>
   );
 }

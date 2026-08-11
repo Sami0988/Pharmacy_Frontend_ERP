@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, Camera, AlertCircle, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useTranslations } from '@/lib/i18n';
 
 interface QrScannerModalProps {
   open: boolean;
@@ -13,6 +14,7 @@ interface QrScannerModalProps {
 type ScannerState = 'loading' | 'ready' | 'permission_denied' | 'error';
 
 export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
+  const { t } = useTranslations();
   const router = useRouter();
   const scannerRef = useRef<HTMLDivElement>(null);
   const scannerInstanceRef = useRef<unknown>(null);
@@ -82,7 +84,7 @@ export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-card rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b">
-          <h3 className="text-lg font-semibold text-foreground">Scan Batch QR Code</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('traceability.scanTitle')}</h3>
           <button type="button" onClick={onClose} className="p-1 rounded-md hover:bg-accent">
             <X className="h-5 w-5 text-muted-foreground" />
           </button>
@@ -92,18 +94,18 @@ export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
           {state === 'loading' && (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Camera className="h-8 w-8 mb-3 animate-pulse" />
-              <p>Starting camera...</p>
+              <p>{t('traceability.startingCamera')}</p>
             </div>
           )}
 
           {state === 'permission_denied' && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <AlertCircle className="h-10 w-10 text-red-500 mb-3" />
-              <p className="text-sm font-medium text-foreground mb-1">Camera access is needed to scan</p>
-              <p className="text-sm text-muted-foreground mb-4">Please allow camera permission in your browser settings, then try again.</p>
+              <p className="text-sm font-medium text-foreground mb-1">{t('traceability.cameraAccessNeeded')}</p>
+              <p className="text-sm text-muted-foreground mb-4">{t('traceability.cameraAccessHint')}</p>
               <Button variant="secondary" onClick={() => setShowManual(true)}>
                 <Keyboard className="h-4 w-4 mr-2" />
-                Type batch number instead
+                {t('traceability.typeInstead')}
               </Button>
             </div>
           )}
@@ -111,11 +113,11 @@ export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
           {state === 'error' && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <AlertCircle className="h-10 w-10 text-amber-500 mb-3" />
-              <p className="text-sm font-medium text-foreground mb-1">Camera not available</p>
-              <p className="text-sm text-muted-foreground mb-4">Your device doesn&apos;t support camera scanning or the camera is in use by another app.</p>
+              <p className="text-sm font-medium text-foreground mb-1">{t('traceability.cameraNotAvailable')}</p>
+              <p className="text-sm text-muted-foreground mb-4">{t('traceability.cameraNotAvailableHint')}</p>
               <Button variant="secondary" onClick={() => setShowManual(true)}>
                 <Keyboard className="h-4 w-4 mr-2" />
-                Type batch number instead
+                {t('traceability.typeInstead')}
               </Button>
             </div>
           )}
@@ -131,7 +133,7 @@ export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
 
           {showManual && (
             <div className="py-4">
-              <label className="block text-sm font-medium text-secondary-foreground mb-2">Batch Number</label>
+              <label className="block text-sm font-medium text-secondary-foreground mb-2">{t('traceability.batchNumber')}</label>
               <input
                 type="text"
                 value={manualBatchNo}
@@ -142,7 +144,7 @@ export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
                     router.push(`/traceability/${manualBatchNo.trim()}`);
                   }
                 }}
-                placeholder="e.g. B-2024-001234"
+                placeholder={t('traceability.batchNumberPlaceholder')}
                 className="flex h-12 w-full rounded-md border border-input bg-card px-3 py-2 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                 autoFocus
               />
@@ -154,13 +156,13 @@ export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
           {!showManual && state === 'ready' && (
             <Button variant="ghost" onClick={() => setShowManual(true)}>
               <Keyboard className="h-4 w-4 mr-2" />
-              Enter manually
+              {t('traceability.enterManually')}
             </Button>
           )}
           {showManual && (
             <Button variant="ghost" onClick={() => { setShowManual(false); setState('loading'); }}>
               <Camera className="h-4 w-4 mr-2" />
-              Try camera again
+              {t('traceability.tryCameraAgain')}
             </Button>
           )}
           <Button
@@ -174,7 +176,7 @@ export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
               }
             }}
           >
-            {showManual && manualBatchNo.trim() ? 'Go to batch' : 'Cancel'}
+            {showManual && manualBatchNo.trim() ? t('traceability.goToBatch') : t('common.cancel')}
           </Button>
         </div>
       </div>

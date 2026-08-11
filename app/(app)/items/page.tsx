@@ -7,11 +7,14 @@ import { Button } from '@/components/ui/Button';
 import { useGetItemsQuery } from '@/store/api/items-api-slice';
 import { ItemsTable } from '@/components/items/ItemsTable';
 import { ItemSearchBar } from '@/components/items/ItemSearchBar';
+import { useTranslations } from '@/lib/i18n';
 import { motion } from 'motion/react';
 
 export default function ItemsPage() {
+  const { t } = useTranslations();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
+  const [unit, setUnit] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
@@ -23,9 +26,14 @@ export default function ItemsPage() {
     setCategory(value);
   }, []);
 
+  const handleUnitChange = useCallback((value: string) => {
+    setUnit(value);
+  }, []);
+
   const { data: response, isLoading, isFetching } = useGetItemsQuery({
     search: search || undefined,
     category: category || undefined,
+    unit: unit || undefined,
     page,
     limit,
   });
@@ -39,13 +47,13 @@ export default function ItemsPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Medicine Catalog</h1>
-          <p className="text-sm text-muted-foreground">Manage registered medicines and item details</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('items.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('items.description')}</p>
         </div>
         <Link href="/items/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
-            New Item
+            {t('items.newItem')}
           </Button>
         </Link>
       </motion.div>
@@ -58,7 +66,9 @@ export default function ItemsPage() {
         <ItemSearchBar
           onSearch={handleSearch}
           onCategoryChange={handleCategoryChange}
+          onUnitChange={handleUnitChange}
           category={category}
+          unit={unit}
         />
       </motion.div>
 
