@@ -722,7 +722,7 @@
     },
     "login": {
       "title": "Gara Akkaawuntii Keetiitti Seeni",
-      "description": "Seenuuf meelii fi jecha iccitii kee galchi",
+      "subtitle": "Seenuuf meelii fi jecha iccitii kee galchi",
       "emailLabel": "Imeelii",
       "emailPlaceholder": "you@example.com",
       "passwordLabel": "Jecha Iccitii",

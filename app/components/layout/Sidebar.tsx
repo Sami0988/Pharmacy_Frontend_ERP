@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth/use-auth';
 import { useTranslations } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
-import type { ComponentType, SVGProps } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
   Package,
@@ -30,7 +30,7 @@ import {
 interface NavItem {
   href: string;
   key: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  icon: LucideIcon;
   roles: string[];
   parent?: string;
 }
