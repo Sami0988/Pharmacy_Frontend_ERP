@@ -105,7 +105,7 @@ export function ExpiryReport() {
     {
       key: 'locationName',
       header: t('reports.location'),
-      render: (row) => <span className="text-muted-foreground">{row.locationName}</span>,
+      render: (row) => <span className="text-muted-foreground">{row.locationName === 'Dispatcher' ? 'Dispenser' : row.locationName}</span>,
     },
     {
       key: 'expiryDate',
@@ -163,7 +163,7 @@ export function ExpiryReport() {
         rows: filteredRows.map((row) => [
           row.itemName,
           row.batchNo,
-          row.locationName,
+          row.locationName === 'Dispatcher' ? 'Dispenser' : row.locationName,
           new Date(row.expiryDate).toLocaleDateString(),
           row.daysUntilExpiry < 0
             ? `${Math.abs(row.daysUntilExpiry)}d ${t('reports.overdue')}`

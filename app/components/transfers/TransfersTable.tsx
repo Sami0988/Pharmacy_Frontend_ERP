@@ -18,6 +18,8 @@ interface TransfersTableProps {
 export function TransfersTable({ data, isLoading, isFetching, pagination }: TransfersTableProps) {
   const { t } = useTranslations();
 
+  const displayLocation = (name: string) => name === 'Dispatcher' ? 'Dispenser' : name;
+
   const columns: Column<Transfer>[] = [
     { key: 'itemName', header: t('transfers.item') },
     { key: 'batchNo', header: t('transfers.batchNo') },
@@ -31,7 +33,7 @@ export function TransfersTable({ data, isLoading, isFetching, pagination }: Tran
       header: t('transfers.fromTo'),
       render: (row) => (
         <span className="font-medium">
-          {row.fromLocationName} → {row.toLocationName}
+          {displayLocation(row.fromLocationName)} → {displayLocation(row.toLocationName)}
         </span>
       ),
     },

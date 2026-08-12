@@ -61,7 +61,7 @@ export function SubstituteSuggestionModal({
 
         <div className="rounded-md bg-amber-50 p-3 mb-4">
           <p className="text-sm text-amber-800">
-            <span className="font-medium">{item.name}</span> {t('sales.zeroDispatcherStock')}
+            <span className="font-medium">{item.name}</span>             {t('sales.zeroDispenserStock')}
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export function SubstituteSuggestionModal({
                       <p className="text-xs text-muted-foreground">{sub.genericName}</p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Dispatcher stock: {sub.dispatcherQuantity}
+                      Dispenser stock: {sub.dispatcherQuantity}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

@@ -93,7 +93,7 @@ export default function ExpiryManagementPage() {
     {
       key: 'locationName',
       header: t('expiryManagement.location'),
-      render: (row) => <span className="text-muted-foreground">{row.locationName}</span>,
+      render: (row) => <span className="text-muted-foreground">{row.locationName === 'Dispatcher' ? 'Dispenser' : row.locationName}</span>,
     },
     {
       key: 'expiryDate',

@@ -102,7 +102,7 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
                         outOfStock ? 'text-destructive' : 'text-foreground'
                       )}
                     >
-                      Dispatcher: {dispatcherQty}
+                      Dispenser: {dispatcherQty}
                     </p>
                     {outOfStock && (
                       <p className="text-xs text-amber-600">{t('sales.outOfStock')}</p>

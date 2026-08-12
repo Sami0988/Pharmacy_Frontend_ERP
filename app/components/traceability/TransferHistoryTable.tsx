@@ -13,6 +13,8 @@ interface TransferHistoryTableProps {
 export function TransferHistoryTable({ transfers }: TransferHistoryTableProps) {
   const { t } = useTranslations();
 
+  const displayLocation = (name: string) => name === 'Dispatcher' ? 'Dispenser' : name;
+
   const columns: Column<TraceTransferEntry>[] = useMemo(() => [
     {
       key: 'transferDate',
@@ -23,12 +25,12 @@ export function TransferHistoryTable({ transfers }: TransferHistoryTableProps) {
     {
       key: 'fromLocation',
       header: t('traceability.from'),
-      render: (entry) => <span className="font-medium">{entry.fromLocation}</span>,
+      render: (entry) => <span className="font-medium">{displayLocation(entry.fromLocation)}</span>,
     },
     {
       key: 'toLocation',
       header: t('traceability.to'),
-      render: (entry) => <span className="font-medium">{entry.toLocation}</span>,
+      render: (entry) => <span className="font-medium">{displayLocation(entry.toLocation)}</span>,
     },
     { key: 'transferredByName', header: t('traceability.by') },
   ], [t]);
