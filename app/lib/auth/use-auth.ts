@@ -23,7 +23,12 @@ export function useAuth() {
     [dispatch]
   );
 
-  const logoutUser = useCallback(() => {
+  const logoutUser = useCallback(async () => {
+    try {
+      await dispatch(authApi.endpoints.logout.initiate()).unwrap();
+    } catch {
+      // Server-side invalidation best-effort — still clear local state
+    }
     dispatch(logout());
     clearAuth();
     router.push('/login');

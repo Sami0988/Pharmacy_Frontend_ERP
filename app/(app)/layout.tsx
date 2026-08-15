@@ -1,9 +1,11 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useAuth } from '@/lib/auth/use-auth';
+import { useInactivityLogout } from '@/lib/auth/use-inactivity-logout';
 import { selectIsAuthChecked, setCredentials, setAuthChecked } from '@/store/slices/auth-slice';
 import { useAppSelector, useAppDispatch } from '@/store/store';
 import { useGetMeQuery } from '@/store/api/auth-api-slice';
@@ -17,6 +19,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const isAuthChecked = useAppSelector(selectIsAuthChecked);
   const [attemptedRestore, setAttemptedRestore] = useState(false);
 
+  useInactivityLogout();
+
   const storedAuth = loadAuth();
   const shouldFetchMe = attemptedRestore && !!storedAuth?.accessToken;
   const { data: meUser, isError: meError } = useGetMeQuery(undefined, {
@@ -24,6 +28,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   // Step 1: Try restoring from localStorage on mount
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (attemptedRestore) return;
     const stored = loadAuth();
@@ -48,7 +53,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       }));
       dispatch(setAuthChecked(true));
     } else if (meError) {
-      // Token invalid — clear and redirect
       dispatch(setAuthChecked(true));
     }
   }, [meUser, meError, shouldFetchMe, storedAuth, dispatch]);

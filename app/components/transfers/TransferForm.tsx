@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { useGetItemsQuery } from '@/store/api/items-api-slice';
 import { useGetStockByLocationQuery, useCreateTransferMutation } from '@/store/api/transfers-api-slice';
 import { FefoSuggestionList } from './FefoSuggestionList';
@@ -30,6 +31,7 @@ export function TransferForm() {
   type TransferFormData = z.infer<typeof transferSchema>;
 
   const [selectedItemId, setSelectedItemId] = useState(preselectedItemId);
+  const [itemSearch, setItemSearch] = useState('');
   const [quantity, setQuantity] = useState<number>(0);
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
   const [transferSuccess, setTransferSuccess] = useState(false);
@@ -37,7 +39,7 @@ export function TransferForm() {
 
   const [createTransfer, { isLoading: isCreating }] = useCreateTransferMutation();
 
-  const items = useGetItemsQuery({}).data?.data ?? [];
+  const items = useGetItemsQuery({ search: itemSearch || undefined, page: 1, limit: 50 }).data?.data ?? [];
 
   const { data: stockData } = useGetStockByLocationQuery(
     { search: selectedItemId ? items?.find((i) => i.id === selectedItemId)?.name : undefined },
@@ -108,7 +110,12 @@ export function TransferForm() {
         router.push('/transfers');
       }, 1500);
     } catch (err: unknown) {
-      const apiError = err as { data?: { message?: string } };
+      const apiError = err as { status?: number; data?: { message?: string } };
+      if (apiError.status && apiError.status >= 500) {
+        toast.error('An unexpected error occurred. Please try again.');
+        setTransferError('An unexpected error occurred. Please try again.');
+        return;
+      }
       if (apiError.data?.message) {
         toast.error(apiError.data.message);
         setTransferError(apiError.data.message);
@@ -155,21 +162,20 @@ export function TransferForm() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label={t('transfers.item')} required error={errors.itemId?.message}>
-              <select
-                {...register('itemId')}
-                onChange={(e) => {
-                  setSelectedItemId(e.target.value);
-                  setValue('itemId', e.target.value);
+              <SearchableSelect
+                value={selectedItemId}
+                onChange={(val) => {
+                  setSelectedItemId(val);
+                  setValue('itemId', val);
                 }}
-                className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-              >
-                <option value="">{t('transfers.selectItem')}</option>
-                {items?.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
+                onSearchChange={setItemSearch}
+                options={items.map((item) => ({
+                  value: item.id,
+                  label: `${item.name}${item.strength ? ` - ${item.strength}` : ''}`,
+                }))}
+                placeholder={t('transfers.selectItem')}
+                emptyMessage={t('transfers.noItemsFound')}
+              />
             </FormField>
 
             <FormField label={t('transfers.quantityToTransfer')} required error={errors.quantity?.message}>

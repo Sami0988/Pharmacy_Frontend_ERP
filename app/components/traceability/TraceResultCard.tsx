@@ -100,6 +100,31 @@ export function TraceResultCard({ result }: TraceResultCardProps) {
           ) : null}
 
           {/* Payment status */}
+          <div className="mt-4 pt-4 border-t grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground">{t('traceability.unitCost')}</p>
+              <p className="text-sm font-medium text-foreground">{(result.unitCost ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">{t('traceability.quantityReceived')}</p>
+              <p className="text-sm font-medium text-foreground">{result.quantityReceived ?? 0}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">{t('traceability.taxPaid')}</p>
+              <p className={`text-sm font-bold ${result.taxPaid ? 'text-green-600' : 'text-red-600'}`}>
+                {result.taxPaid ? t('common.yes') : t('common.no')}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">{t('traceability.paymentDueDate')}</p>
+              <p className="text-sm font-medium text-foreground">
+                {result.paymentDueDate ? new Date(result.paymentDueDate).toLocaleDateString() : '—'}
+              </p>
+              {result.paymentDueDateType && (
+                <p className="text-xs text-muted-foreground capitalize">{result.paymentDueDateType.replace(/_/g, ' ')}</p>
+              )}
+            </div>
+          </div>
           <div className="mt-4 pt-4 border-t grid grid-cols-3 gap-4">
             <div>
               <p className="text-xs text-muted-foreground">{t('traceability.totalCost')}</p>

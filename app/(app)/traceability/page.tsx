@@ -1,11 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useCallback, useRef } from 'react';
 import { FileSearch } from 'lucide-react';
 import { BatchSearchBar } from '@/components/traceability/BatchSearchBar';
-import { QrScannerButton } from '@/components/traceability/QrScannerButton';
-import { QrScannerModal } from '@/components/traceability/QrScannerModal';
 import { TraceResultCard } from '@/components/traceability/TraceResultCard';
 import { motion } from 'motion/react';
 import { useLazyTraceByBatchNoQuery } from '@/store/api/traceability-api-slice';
@@ -14,17 +11,28 @@ import { useTranslations } from '@/lib/i18n';
 export default function TraceabilityPage() {
   const { t } = useTranslations();
   const [searchValue, setSearchValue] = useState('');
-  const [showScanner, setShowScanner] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const [trigger, { data, isLoading, error }] = useLazyTraceByBatchNoQuery();
 
-  const handleSearch = () => {
-    const trimmed = searchValue.trim();
+  const doSearch = useCallback((value: string) => {
+    const trimmed = value.trim();
     if (!trimmed) return;
     setHasSearched(true);
     trigger(trimmed);
+  }, [trigger]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const trimmed = value.trim();
+    if (trimmed.length >= 3) {
+      debounceRef.current = setTimeout(() => doSearch(trimmed), 400);
+    }
   };
+
+  const handleSearch = () => doSearch(searchValue);
 
   const results = data || [];
   const singleResult = results.length === 1 ? results[0] : null;
@@ -47,17 +55,14 @@ export default function TraceabilityPage() {
         <p className="text-sm text-muted-foreground mt-1">{t('traceability.subtitle')}</p>
       </motion.div>
 
-      {/* Search bar + scan button */}
+      {/* Search bar */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="flex flex-col sm:flex-row items-center gap-3 max-w-2xl mx-auto"
+        className="max-w-2xl mx-auto"
       >
-        <div className="flex-1 w-full">
-          <BatchSearchBar value={searchValue} onChange={setSearchValue} onSearch={handleSearch} />
-        </div>
-        <QrScannerButton onClick={() => setShowScanner(true)} />
+        <BatchSearchBar value={searchValue} onChange={handleSearchChange} onSearch={handleSearch} />
       </motion.div>
 
       {/* Loading */}
@@ -71,7 +76,11 @@ export default function TraceabilityPage() {
       {/* Error */}
       {error && (
         <div className="text-center py-8">
-          <p className="text-sm text-red-600">{t('traceability.error')}</p>
+          <p className="text-sm text-red-600">
+            {'data' in error && error.data && typeof error.data === 'object' && 'message' in error.data
+              ? (error.data as { message: string }).message
+              : t('traceability.error')}
+          </p>
         </div>
       )}
 
@@ -100,7 +109,7 @@ export default function TraceabilityPage() {
           </p>
           <div className="grid gap-3 max-w-lg mx-auto">
             {multipleResults.map((result) => (
-              <Link
+              <a
                 key={result.batchId}
                 href={`/traceability/${result.batchId}`}
                 className="block rounded-lg border border-border bg-card px-4 py-3 hover:border-primary hover:shadow-sm transition-colors"
@@ -109,14 +118,11 @@ export default function TraceabilityPage() {
                 <p className="text-xs text-muted-foreground">
                   {t('traceability.batch')}: {result.batchNumber} · {t('traceability.received')}: {new Date(result.receiptDate).toLocaleDateString()}
                 </p>
-              </Link>
+              </a>
             ))}
           </div>
         </motion.div>
       )}
-
-      {/* QR Scanner Modal */}
-      <QrScannerModal open={showScanner} onClose={() => setShowScanner(false)} />
     </div>
   );
 }

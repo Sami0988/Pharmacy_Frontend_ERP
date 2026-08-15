@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
-import type { GoodsReceipt, SupplierBalanceSummary } from '@/types/api';
+import type { GoodsReceipt } from '@/types/api';
 import { useTranslations } from '@/lib/i18n';
 import type { PaginationMeta } from '@/components/ui/PaginationControls';
 
@@ -12,7 +12,6 @@ interface GoodsReceiptsTableProps {
   data: GoodsReceipt[];
   isLoading?: boolean;
   isFetching?: boolean;
-  supplierBalances?: SupplierBalanceSummary[];
   pagination?: PaginationMeta & {
     onPageChange: (page: number) => void;
     onLimitChange: (limit: number) => void;
@@ -23,36 +22,33 @@ export function GoodsReceiptsTable({
   data,
   isLoading,
   isFetching,
-  supplierBalances = [],
   pagination,
 }: GoodsReceiptsTableProps) {
   const router = useRouter();
   const { t } = useTranslations();
 
-  const balanceMap = new Map(
-    supplierBalances.map((b) => [b.supplierId, b])
-  );
-
   const dataWithStatus = data.map((receipt) => {
-    const supplierBalance = balanceMap.get(receipt.supplierId);
+    const amountPaid = Number(receipt.amountPaid);
+    const totalCost = Number(receipt.totalCost);
     let paymentStatus: 'paid' | 'partial' | 'unpaid' = 'unpaid';
-    if (supplierBalance) {
-      if (supplierBalance.outstanding === 0) {
-        paymentStatus = 'paid';
-      } else if (supplierBalance.outstanding < supplierBalance.totalOwed) {
-        paymentStatus = 'partial';
-      }
+    if (amountPaid === 0) {
+      paymentStatus = 'unpaid';
+    } else if (amountPaid >= totalCost) {
+      paymentStatus = 'paid';
+    } else {
+      paymentStatus = 'partial';
     }
     return { ...receipt, paymentStatus };
   });
 
   const columns: Column<GoodsReceipt & { paymentStatus?: 'paid' | 'partial' | 'unpaid' }>[] = [
     { key: 'grnNumber', header: t('goodsReceipts.grnNumber') },
-    { key: 'supplierName', header: t('goodsReceipts.supplier') },
+    { key: 'supplierName', header: t('goodsReceipts.supplier'), hideBelow: 'md' },
     {
       key: 'receiptDate',
       header: t('goodsReceipts.receiptDate'),
       render: (g) => new Date(g.receiptDate).toLocaleDateString(),
+      hideBelow: 'lg',
     },
     {
       key: 'totalCost',
@@ -62,6 +58,16 @@ export function GoodsReceiptsTable({
           style: 'currency',
           currency: 'ETB',
         }),
+    },
+    {
+      key: 'amountPaid',
+      header: t('goodsReceipts.amountPaid'),
+      render: (g) =>
+        g.amountPaid.toLocaleString('en-US', {
+          style: 'currency',
+          currency: 'ETB',
+        }),
+      hideBelow: 'md',
     },
     {
       key: 'paymentStatus',

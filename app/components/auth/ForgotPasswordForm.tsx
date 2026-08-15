@@ -35,7 +35,11 @@ export function ForgotPasswordForm() {
       toast.success('Reset link sent — check your email');
       setSent(true);
     } catch (err: unknown) {
-      const apiError = err as { data?: { message?: string } };
+      const apiError = err as { status?: number; data?: { message?: string } };
+      if (apiError.status && apiError.status >= 500) {
+        toast.error('An unexpected error occurred. Please try again.');
+        return;
+      }
       toast.error(apiError.data?.message || 'Failed to send reset email');
     }
   };

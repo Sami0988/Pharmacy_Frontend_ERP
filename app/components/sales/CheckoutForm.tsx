@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { FormField } from '@/components/ui/FormField';
 import { CustomerSearchInput } from '@/components/customers/CustomerSearchInput';
+import { NewCustomerModal } from '@/components/customers/NewCustomerModal';
 import { useCreateSaleMutation } from '@/store/api/sales-api-slice';
 import type { PosCartItem } from './PosCart';
 import type { Customer } from '@/types/api';
@@ -24,6 +26,7 @@ export function CheckoutForm({ items, total, onClearCart, onLineError }: Checkou
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'mobile_money' | 'card' | 'credit'>('cash');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [showNewCustomerModal, setShowNewCustomerModal] = useState(false);
   const [createSale, { isLoading }] = useCreateSaleMutation();
 
   const isCreditSale = paymentMethod === 'credit';
@@ -55,8 +58,13 @@ export function CheckoutForm({ items, total, onClearCart, onLineError }: Checkou
       router.push(`/sales/${result.id}`);
     } catch (err: unknown) {
       const apiError = err as {
+        status?: number;
         data?: { message?: string; failedItemId?: string; errors?: Record<string, string[]>; details?: string };
       };
+      if (apiError.status && apiError.status >= 500) {
+        toast.error('An unexpected error occurred. Please try again.');
+        return;
+      }
       if (apiError.data?.failedItemId) {
         onLineError(apiError.data.failedItemId, apiError.data.message || t('sales.stockChanged'));
       } else if (apiError.data?.errors) {
@@ -97,17 +105,29 @@ export function CheckoutForm({ items, total, onClearCart, onLineError }: Checkou
         </FormField>
 
         {isCreditSale && (
-          <FormField
-            label={t('sales.customer')}
-            required
-            error={!selectedCustomer ? t('sales.customerRequired') : undefined}
-          >
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-sm font-medium text-foreground">
+                {t('sales.customer')} <span className="text-destructive">*</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowNewCustomerModal(true)}
+                className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                New
+              </button>
+            </div>
+            {(!selectedCustomer) && (
+              <p className="text-xs text-destructive mb-1.5">{t('sales.customerRequired')}</p>
+            )}
             <CustomerSearchInput
               onSelectCustomer={setSelectedCustomer}
               selectedCustomer={selectedCustomer}
               onClearCustomer={() => setSelectedCustomer(null)}
             />
-          </FormField>
+          </div>
         )}
 
         <div className="rounded-md bg-background p-4">
@@ -129,6 +149,12 @@ export function CheckoutForm({ items, total, onClearCart, onLineError }: Checkou
           {t('sales.completeSale')}
         </Button>
       </CardContent>
+
+      <NewCustomerModal
+        open={showNewCustomerModal}
+        onClose={() => setShowNewCustomerModal(false)}
+        onCreated={(customer) => setSelectedCustomer(customer)}
+      />
     </Card>
   );
 }

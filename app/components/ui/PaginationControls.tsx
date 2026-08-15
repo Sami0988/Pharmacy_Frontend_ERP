@@ -31,9 +31,9 @@ export function PaginationControls({
   const endItem = Math.min(page * limit, totalItems);
 
   return (
-    <div className="flex items-center justify-between px-2 py-3">
+    <div className="flex flex-col sm:flex-row items-center justify-between px-2 py-3 gap-3">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Rows per page</span>
+        <span className="hidden sm:inline text-sm text-muted-foreground">Rows per page</span>
         <select
           value={limit}
           onChange={(e) => onLimitChange(Number(e.target.value))}

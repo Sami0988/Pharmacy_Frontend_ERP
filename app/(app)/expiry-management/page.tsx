@@ -35,7 +35,7 @@ function getStatus(daysUntilExpiry: number): ExpiryStatus {
 export default function ExpiryManagementPage() {
   const { t } = useTranslations();
   const [activeTab, setActiveTab] = useState('all');
-  const [withinDays, setWithinDays] = useState(90);
+  const [withinDays, setWithinDays] = useState(270);
   const { data: response, isLoading } = useGetExpiringBatchesQuery({ withinDays });
   const batches = response?.data ?? [];
 
@@ -201,14 +201,14 @@ export default function ExpiryManagementPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">{t('expiryManagement.window')}:</span>
-            {[30, 60, 90].map((days) => (
+            {[30, 60, 90, 180, 270].map((days) => (
               <Button
                 key={days}
                 variant={withinDays === days ? 'default' : 'secondary'}
                 size="sm"
                 onClick={() => setWithinDays(days)}
               >
-                {days}d
+                {days === 180 ? '6mo' : days === 270 ? '9mo' : `${days}d`}
               </Button>
             ))}
           </div>
@@ -221,7 +221,7 @@ export default function ExpiryManagementPage() {
               data={filteredRows}
               isLoading={isLoading}
               emptyMessage={t('expiryManagement.noExpiryData')}
-              keyExtractor={(row) => row.batchId}
+              keyExtractor={(row) => `${row.batchId}-${row.locationName}`}
             />
           </CardContent>
         </Card>

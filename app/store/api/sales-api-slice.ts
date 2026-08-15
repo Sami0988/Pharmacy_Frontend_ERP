@@ -60,6 +60,14 @@ export const salesApi = createApi({
         { type: 'StockByLocation', id: 'LIST' },
       ],
     }),
+
+    deleteSale: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/sales/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Sale', id: 'LIST' }],
+    }),
   }),
 });
 
@@ -68,4 +76,5 @@ export const {
   useGetSaleQuery,
   useCreateSaleMutation,
   useCreateSaleReturnMutation,
+  useDeleteSaleMutation,
 } = salesApi;

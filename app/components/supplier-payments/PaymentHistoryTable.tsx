@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import type { Payment } from '@/types/api';
@@ -23,23 +22,10 @@ const columns: Column<Payment>[] = [
     render: (p) => new Date(p.paymentDate).toLocaleDateString(),
   },
   {
-    key: 'grnNumber',
-    header: 'GRN',
-    render: (p) => (
-      <Link
-        href={`/goods-receipts/${p.grnId}`}
-        className="text-blue-600 hover:text-blue-800 font-medium"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {p.grnNumber}
-      </Link>
-    ),
-  },
-  {
-    key: 'amount',
+    key: 'amountPaid',
     header: 'Amount',
     render: (p) =>
-      p.amount.toLocaleString('en-US', {
+      p.amountPaid.toLocaleString('en-US', {
         style: 'currency',
         currency: 'ETB',
       }),

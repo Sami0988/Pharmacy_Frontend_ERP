@@ -68,11 +68,11 @@ export default function InventoryPage() {
           </div>
         ),
       },
-      { key: 'category', header: t('inventory.category'), render: (item) => <span className="text-sm text-muted-foreground">{item.category || '-'}</span> },
-      { key: 'strength', header: t('inventory.strength'), render: (item) => <span className="text-sm text-muted-foreground">{item.strength || '-'}</span> },
-      { key: 'unit', header: t('inventory.unit'), render: (item) => <span className="text-sm text-muted-foreground">{item.unit}</span> },
+      { key: 'category', header: t('inventory.category'), render: (item) => <span className="text-sm text-muted-foreground">{item.category || '-'}</span>, hideBelow: 'md' },
+      { key: 'strength', header: t('inventory.strength'), render: (item) => <span className="text-sm text-muted-foreground">{item.strength || '-'}</span>, hideBelow: 'lg' },
+      { key: 'unit', header: t('inventory.unit'), render: (item) => <span className="text-sm text-muted-foreground">{item.unit}</span>, hideBelow: 'md' },
       { key: 'sellingPrice', header: t('inventory.price'), render: (item) => <span className="text-sm text-muted-foreground">{formatPrice(String(item.sellingPrice ?? ''))}</span> },
-      { key: 'reorderLevel', header: t('inventory.reorderLevel'), render: (item) => <span className="text-sm text-muted-foreground">{item.reorderLevel}</span> },
+      { key: 'reorderLevel', header: t('inventory.reorderLevel'), render: (item) => <span className="text-sm text-muted-foreground">{item.reorderLevel}</span>, hideBelow: 'lg' },
       {
         key: 'quantity',
         header: t('common.quantity'),
@@ -93,7 +93,7 @@ export default function InventoryPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex items-center justify-between"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
       >
         <div className="flex items-center gap-3">
           <Package className="h-6 w-6 text-foreground" />

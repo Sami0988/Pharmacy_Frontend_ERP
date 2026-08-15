@@ -51,6 +51,14 @@ export const suppliersApi = createApi({
         { type: 'Supplier', id: 'LIST' },
       ],
     }),
+
+    deleteSupplier: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/suppliers/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Supplier', id: 'LIST' }],
+    }),
   }),
 });
 
@@ -59,4 +67,5 @@ export const {
   useGetSupplierQuery,
   useCreateSupplierMutation,
   useUpdateSupplierMutation,
+  useDeleteSupplierMutation,
 } = suppliersApi;

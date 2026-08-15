@@ -77,16 +77,11 @@ export interface BackupCodesResponse {
 
 export interface Session {
   id: string;
-  ipAddress: string;
-  userAgent: string;
   createdAt: string;
-  lastActiveAt: string;
-  isCurrent: boolean;
+  expiresAt: string;
 }
 
-export interface SessionsResponse {
-  sessions: Session[];
-}
+export type SessionsResponse = Session[];
 
 export interface LoginHistoryEntry {
   id: string;
@@ -202,6 +197,8 @@ export interface GoodsReceipt {
   branchId: string;
   receiptDate: string;
   totalCost: number;
+  amountPaid: number;
+  balance: number;
   invoiceDocumentUrl?: string;
   taxPaid: boolean;
   paymentDueDate: string;
@@ -243,7 +240,7 @@ export interface Payment {
   supplierId: string;
   grnId: string;
   grnNumber: string;
-  amount: number;
+  amountPaid: number;
   paymentDate: string;
   method: 'cash' | 'bank_transfer' | 'mobile_money' | 'other';
   notes?: string;
@@ -253,7 +250,7 @@ export interface Payment {
 export interface CreatePaymentDto {
   supplierId: string;
   grnId: string;
-  amount: number;
+  amountPaid: number;
   paymentDate: string;
   method: 'cash' | 'bank_transfer' | 'mobile_money' | 'other';
   notes?: string;
@@ -356,8 +353,6 @@ export interface Customer {
 export interface CreateCustomerDto {
   name: string;
   phone?: string;
-  email?: string;
-  address?: string;
 }
 
 export type UpdateCustomerDto = Partial<CreateCustomerDto>;
@@ -447,6 +442,11 @@ export interface TraceResult {
   receiptDate: string;
   invoiceDocumentUrl?: string;
   documentUnavailable?: boolean;
+  unitCost: number;
+  quantityReceived: number;
+  taxPaid: boolean;
+  paymentDueDate?: string;
+  paymentDueDateType?: string;
   totalCost: number;
   paidAmount: number;
   outstanding: number;
@@ -494,12 +494,13 @@ export interface RecallRecipient {
 
 export interface Notification {
   id: string;
-  type: 'zero_stock' | 'low_stock' | 'near_expiry' | 'expired';
+  type: 'zero_stock' | 'low_stock' | 'near_expiry' | 'expired' | 'payment_due' | 'payment_overdue';
   message: string;
   itemId?: string;
   itemName?: string;
   batchId?: string;
   batchNumber?: string;
+  thresholdDays?: 30 | 60 | 90 | 180 | 270;
   isRead: boolean;
   createdAt: string;
 }
@@ -540,7 +541,7 @@ export interface CategoryBreakdownPoint {
 export interface DashboardSummary {
   todaySales: { totalAmount: number; transactionCount: number };
   todayProfit: { estimatedProfit: number; margin: number };
-  expiringStock: { within30Days: number; within60Days: number; within90Days: number };
+  expiringStock: { within30Days: number; within60Days: number; within90Days: number; within180Days: number; within270Days: number };
   topSellers: { itemId: string; itemName: string; revenue: number; quantity: number }[];
   notificationSummary: NotificationSummary;
   compliance?: string;

@@ -27,6 +27,11 @@ function mapTraceResult(raw: any): TraceResult {
     receiptDate: source.receiptDate ?? '',
     invoiceDocumentUrl: docUrl ?? undefined,
     documentUnavailable: !docUrl,
+    unitCost: Number(source.unitCost ?? 0),
+    quantityReceived: Number(source.quantityReceived ?? 0),
+    taxPaid: Boolean(source.taxPaid),
+    paymentDueDate: source.paymentDueDate ?? undefined,
+    paymentDueDateType: source.paymentDueDateType ?? undefined,
     totalCost: payment.totalCost ?? 0,
     paidAmount: payment.totalPaid ?? 0,
     outstanding: payment.outstanding ?? 0,
@@ -71,7 +76,6 @@ export const traceabilityApi = createApi({
     getRecallImpact: builder.query<RecallImpact, string>({
       query: (batchId) => `/batches/${batchId}/recall-impact`,
       transformResponse: (response: any) => {
-        console.log('[RecallImpact] raw response:', JSON.stringify(response, null, 2));
         const rawStock = response?.currentStock ?? [];
         let storeQty = 0;
         let dispatcherQty = 0;

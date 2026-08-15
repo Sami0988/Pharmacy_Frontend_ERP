@@ -44,7 +44,7 @@ export default function ItemsPage() {
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-center justify-between"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
       >
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('items.title')}</h1>

@@ -11,7 +11,7 @@ import { FormField } from '@/components/ui/FormField';
 import { useCreatePaymentMutation } from '@/store/api/supplier-payments-api-slice';
 
 const paymentSchema = z.object({
-  amount: z.number().min(0.01, 'Amount must be greater than 0'),
+  amountPaid: z.number().min(0.01, 'Amount must be greater than 0'),
   paymentDate: z.string().min(1, 'Payment date is required'),
   method: z.enum(['cash', 'bank_transfer', 'mobile_money', 'other']),
   notes: z.string().optional(),
@@ -49,7 +49,7 @@ export function RecordPaymentForm({
   } = useForm<PaymentFormData>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      amount: undefined,
+      amountPaid: undefined,
       paymentDate: new Date().toISOString().split('T')[0],
       method: 'cash',
       notes: '',
@@ -63,7 +63,7 @@ export function RecordPaymentForm({
   useEffect(() => {
     if (open) {
       reset({
-        amount: undefined,
+        amountPaid: undefined,
         paymentDate: new Date().toISOString().split('T')[0],
         method: 'cash',
         notes: '',
@@ -72,8 +72,8 @@ export function RecordPaymentForm({
   }, [open, reset]);
 
   const onSubmit = async (data: PaymentFormData) => {
-    if (data.amount > outstanding) {
-      setError('amount', {
+    if (data.amountPaid > outstanding) {
+      setError('amountPaid', {
         type: 'validate',
         message: `Amount cannot exceed outstanding balance of ${outstanding.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}`,
       });
@@ -84,7 +84,7 @@ export function RecordPaymentForm({
       await createPayment({
         supplierId,
         grnId,
-        amount: data.amount,
+        amountPaid: data.amountPaid,
         paymentDate: data.paymentDate,
         method: data.method,
         notes: data.notes || undefined,
@@ -93,14 +93,19 @@ export function RecordPaymentForm({
       onClose();
     } catch (err: unknown) {
       const apiError = err as {
+        status?: number;
         data?: { message?: string; outstanding?: number };
       };
+      if (apiError.status && apiError.status >= 500) {
+        toast.error('An unexpected error occurred. Please try again.');
+        return;
+      }
       if (apiError.data?.message) {
         toast.error(apiError.data.message);
       }
       if (apiError.data?.outstanding !== undefined) {
         setOutstanding(apiError.data.outstanding);
-        setError('amount', {
+        setError('amountPaid', {
           type: 'server',
           message: `${apiError.data.message || 'Payment failed'}. New outstanding: ${apiError.data.outstanding.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}`,
         });
@@ -114,7 +119,7 @@ export function RecordPaymentForm({
   };
 
   // eslint-disable-next-line react-hooks/incompatible-library
-  const amountValue = watch('amount');
+  const amountValue = watch('amountPaid');
 
   if (!open) return null;
 
@@ -157,9 +162,9 @@ export function RecordPaymentForm({
             </div>
           )}
 
-          <FormField label="Amount" required error={errors.amount?.message}>
+          <FormField label="Amount" required error={errors.amountPaid?.message}>
             <Input
-              {...register('amount', { valueAsNumber: true })}
+              {...register('amountPaid', { valueAsNumber: true })}
               type="number"
               step="0.01"
               min="0.01"

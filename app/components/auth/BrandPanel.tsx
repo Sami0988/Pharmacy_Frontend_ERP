@@ -14,7 +14,7 @@ function FloatingDot({ delay, x, y, size }: { delay: number; x: string; y: strin
         opacity: [0.2, 0.6, 0.2],
       }}
       transition={{
-        duration: 4 + Math.random() * 2,
+        duration: 4 + (delay * 1.3) % 2,
         repeat: Infinity,
         delay,
         ease: 'easeInOut',

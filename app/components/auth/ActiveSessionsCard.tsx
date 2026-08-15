@@ -1,30 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Monitor, Smartphone, Tablet, Laptop, Trash2 } from 'lucide-react';
+import { Monitor, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useGetSessionsQuery, useRevokeSessionMutation } from '@/store/api/auth-api-slice';
-import { formatUserAgent, parseUserAgent } from '@/lib/user-agent';
 import { useTranslations } from '@/lib/i18n';
 import { toast } from 'sonner';
-
-function getDeviceIcon(ua: string) {
-  const { device } = parseUserAgent(ua);
-  switch (device) {
-    case 'mobile':
-      return <Smartphone className="h-4 w-4" />;
-    case 'tablet':
-      return <Tablet className="h-4 w-4" />;
-    case 'desktop':
-      return <Monitor className="h-4 w-4" />;
-    default:
-      return <Laptop className="h-4 w-4" />;
-  }
-}
 
 function SessionSkeleton() {
   return (
@@ -43,13 +28,15 @@ function SessionSkeleton() {
 
 export function ActiveSessionsCard() {
   const { t } = useTranslations();
-  const { data, isLoading } = useGetSessionsQuery();
+  const { data: sessions, isLoading } = useGetSessionsQuery();
   const [revokeSession, { isLoading: isRevoking }] = useRevokeSessionMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
-  const sessions = data?.sessions ?? [];
-  const otherSessions = sessions.filter((s) => !s.isCurrent);
+  const sessionList = sessions ?? [];
+  const now = new Date();
+  const currentSession = sessionList.find((s) => new Date(s.expiresAt) > now);
+  const otherSessions = sessionList.filter((s) => s.id !== currentSession?.id);
 
   const handleRevokeClick = (sessionId: string) => {
     setSelectedSessionId(sessionId);
@@ -76,6 +63,19 @@ export function ActiveSessionsCard() {
     }
   };
 
+  function formatSessionDate(dateStr: string) {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHrs = Math.floor(diffMins / 60);
+    if (diffHrs < 24) return `${diffHrs}h ago`;
+    const diffDays = Math.floor(diffHrs / 24);
+    return `${diffDays}d ago`;
+  }
+
   return (
     <>
       <Card>
@@ -98,44 +98,47 @@ export function ActiveSessionsCard() {
               <SessionSkeleton />
               <SessionSkeleton />
             </div>
-          ) : sessions.length === 0 ? (
+          ) : sessionList.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">{t('settings.noSessions')}</p>
           ) : (
             <div className="divide-y">
-              {sessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="flex items-center justify-between py-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-muted">
-                      {getDeviceIcon(session.userAgent)}
+              {sessionList.map((session) => {
+                const isCurrent = currentSession?.id === session.id;
+                return (
+                  <div
+                    key={session.id}
+                    className="flex items-center justify-between py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-muted">
+                        <Monitor className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          Session {session.id.slice(0, 8)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {t('settings.created')}: {new Date(session.createdAt).toLocaleString()} · {t('settings.expires')}: {new Date(session.expiresAt).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {formatUserAgent(session.userAgent)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        IP: {session.ipAddress} · {t('settings.lastActive')}: {new Date(session.lastActiveAt).toLocaleString()}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      {isCurrent ? (
+                        <Badge variant="success">{t('settings.currentSession')}</Badge>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRevokeClick(session.id)}
+                          disabled={isRevoking}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {session.isCurrent ? (
-                      <Badge variant="success">{t('settings.currentSession')}</Badge>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRevokeClick(session.id)}
-                        disabled={isRevoking}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

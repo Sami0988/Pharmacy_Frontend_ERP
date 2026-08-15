@@ -13,6 +13,14 @@ interface QrScannerModalProps {
 
 type ScannerState = 'loading' | 'ready' | 'permission_denied' | 'error';
 
+const BATCH_ID_REGEX = /^[a-zA-Z0-9._-]+$/;
+
+function sanitizeBatchId(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed.length > 100 || !BATCH_ID_REGEX.test(trimmed)) return null;
+  return encodeURIComponent(trimmed);
+}
+
 export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
   const { t } = useTranslations();
   const router = useRouter();
@@ -45,10 +53,12 @@ export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
           },
           (decodedText: string) => {
             if (cancelled) return;
-            const batchId = decodedText.trim();
             scanner.stop().catch(() => {});
             onClose();
-            router.push(`/traceability/${batchId}`);
+            const safeId = sanitizeBatchId(decodedText);
+            if (safeId) {
+              router.push(`/traceability/${safeId}`);
+            }
           },
           () => {},
         );
@@ -141,7 +151,10 @@ export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && manualBatchNo.trim()) {
                     onClose();
-                    router.push(`/traceability/${manualBatchNo.trim()}`);
+                    const safeId = sanitizeBatchId(manualBatchNo);
+                    if (safeId) {
+                      router.push(`/traceability/${safeId}`);
+                    }
                   }
                 }}
                 placeholder={t('traceability.batchNumberPlaceholder')}
@@ -170,7 +183,10 @@ export function QrScannerModal({ open, onClose }: QrScannerModalProps) {
             onClick={() => {
               if (showManual && manualBatchNo.trim()) {
                 onClose();
-                router.push(`/traceability/${manualBatchNo.trim()}`);
+                const safeId = sanitizeBatchId(manualBatchNo);
+                if (safeId) {
+                  router.push(`/traceability/${safeId}`);
+                }
               } else {
                 onClose();
               }

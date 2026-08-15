@@ -6,7 +6,6 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { useGetGoodsReceiptsQuery } from '@/store/api/goods-receipts-api-slice';
-import { useGetAllSupplierBalancesQuery } from '@/store/api/supplier-payments-api-slice';
 import { useTranslations } from '@/lib/i18n';
 import { motion } from 'motion/react';
 import { GoodsReceiptsTable } from '@/components/goods-receipts/GoodsReceiptsTable';
@@ -22,12 +21,10 @@ export default function GoodsReceiptsPage() {
   }, []);
 
   const { data: response, isLoading, isFetching } = useGetGoodsReceiptsQuery({
-    supplierId: supplierFilter || undefined,
+    supplier: supplierFilter || undefined,
     page,
     limit,
   });
-
-  const { data: supplierBalances } = useGetAllSupplierBalancesQuery();
 
   return (
     <div className="space-y-6">
@@ -35,7 +32,7 @@ export default function GoodsReceiptsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex items-center justify-between"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
       >
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t('goodsReceipts.title')}</h1>
@@ -70,7 +67,6 @@ export default function GoodsReceiptsPage() {
           data={response?.data ?? []}
           isLoading={isLoading}
           isFetching={isFetching}
-          supplierBalances={supplierBalances}
           pagination={response ? {
             ...response.meta,
             onPageChange: setPage,

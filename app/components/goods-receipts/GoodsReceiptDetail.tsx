@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ExternalLink, QrCode } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -52,31 +52,12 @@ const batchColumns: Column<Batch>[] = [
         currency: 'ETB',
       }),
   },
-  {
-    key: 'qrCodeUrl',
-    header: 'QR Code',
-    render: (b) =>
-      b.qrCodeUrl ? (
-        <a
-          href={b.qrCodeUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-primary hover:text-primary/80"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <QrCode className="h-4 w-4" />
-          View
-        </a>
-      ) : (
-        <span className="text-muted-foreground">-</span>
-      ),
-  },
 ];
 
 export function GoodsReceiptDetail({ receipt }: GoodsReceiptDetailProps) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{receipt.grnNumber}</h1>
           <p className="text-sm text-muted-foreground">
@@ -155,7 +136,14 @@ export function GoodsReceiptDetail({ receipt }: GoodsReceiptDetailProps) {
       </Card>
 
       <div>
-        <Link href="/goods-receipts" className="text-primary hover:text-primary/80 text-sm font-medium">
+        <Link
+          href="/goods-receipts"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = '/goods-receipts';
+          }}
+          className="text-primary hover:text-primary/80 text-sm font-medium"
+        >
           &larr; Back to Goods Receipts
         </Link>
       </div>

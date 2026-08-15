@@ -1,19 +1,36 @@
 'use client';
 
 import Link from 'next/link';
-import { Package, AlertTriangle, Clock, ShoppingCart, Check } from 'lucide-react';
+import { Package, AlertTriangle, Clock, ShoppingCart, Check, Info } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useGetNotificationsQuery, useMarkReadMutation } from '@/store/api/notifications-api-slice';
 import type { Notification } from '@/types/api';
 
-function typeIcon(type: Notification['type']) {
-  switch (type) {
+function expiryIconColor(thresholdDays?: Notification['thresholdDays']): string {
+  switch (thresholdDays) {
+    case 270:
+      return 'text-blue-500';
+    case 180:
+      return 'text-yellow-500';
+    case 90:
+      return 'text-orange-500';
+    case 60:
+      return 'text-orange-600';
+    case 30:
+      return 'text-red-500';
+    default:
+      return 'text-amber-500';
+  }
+}
+
+function typeIcon(n: Notification) {
+  switch (n.type) {
     case 'zero_stock':
       return <Package className="h-4 w-4 text-red-500" />;
     case 'low_stock':
       return <AlertTriangle className="h-4 w-4 text-amber-500" />;
     case 'near_expiry':
-      return <Clock className="h-4 w-4 text-amber-500" />;
+      return <Clock className={`h-4 w-4 ${expiryIconColor(n.thresholdDays)}`} />;
     case 'expired':
       return <ShoppingCart className="h-4 w-4 text-red-500" />;
   }
@@ -53,7 +70,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
               key={n.id}
               className={`flex items-start gap-3 px-4 py-3 border-b border-border last:border-0 ${!n.isRead ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
             >
-              <div className="mt-0.5 shrink-0">{typeIcon(n.type)}</div>
+              <div className="mt-0.5 shrink-0">{typeIcon(n)}</div>
               <div className="flex-1 min-w-0">
                 <Link
                   href={linkTarget(n)}

@@ -9,6 +9,7 @@ export interface Column<T> {
   header: string;
   render?: (item: T) => React.ReactNode;
   className?: string;
+  hideBelow?: 'sm' | 'md' | 'lg';
 }
 
 interface DataTableProps<T> {
@@ -41,6 +42,12 @@ function TableSkeleton({ columnCount }: { columnCount: number }) {
   );
 }
 
+const hideBelowMap = {
+  sm: 'hidden sm:table-cell',
+  md: 'hidden md:table-cell',
+  lg: 'hidden lg:table-cell',
+};
+
 export function DataTable<T>({
   columns,
   data,
@@ -61,6 +68,7 @@ export function DataTable<T>({
                 key={col.key}
                 className={cn(
                   'px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider',
+                  col.hideBelow && hideBelowMap[col.hideBelow],
                   col.className
                 )}
               >
@@ -97,7 +105,14 @@ export function DataTable<T>({
                 onClick={() => onRowClick?.(item)}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className={cn('px-4 py-3 text-sm text-foreground', col.className)}>
+                  <td
+                    key={col.key}
+                    className={cn(
+                      'px-4 py-3 text-sm text-foreground',
+                      col.hideBelow && hideBelowMap[col.hideBelow],
+                      col.className
+                    )}
+                  >
                     {col.render
                       ? col.render(item)
                       : String((item as Record<string, unknown>)[col.key] ?? '')}

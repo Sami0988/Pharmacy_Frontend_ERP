@@ -42,7 +42,11 @@ export function ResetPasswordForm() {
       toast.success('Password reset successfully');
       setSuccess(true);
     } catch (err: unknown) {
-      const apiError = err as { data?: { message?: string } };
+      const apiError = err as { status?: number; data?: { message?: string } };
+      if (apiError.status && apiError.status >= 500) {
+        toast.error('An unexpected error occurred. Please try again.');
+        return;
+      }
       toast.error(apiError.data?.message || 'Failed to reset password');
     }
   };

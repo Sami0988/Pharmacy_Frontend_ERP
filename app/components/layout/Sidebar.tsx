@@ -42,13 +42,13 @@ export const navKeys: NavItem[] = [
   { href: '/goods-receipts', key: 'sidebar.goodsReceipts', icon: Receipt, roles: ['admin', 'store_keeper'] },
   { href: '/suppliers', key: 'sidebar.suppliers', icon: Users, roles: ['admin', 'store_keeper'] },
   { href: '/sales', key: 'sidebar.salesPos', icon: ShoppingCart, roles: ['admin', 'cashier'] },
-  { href: '/prescriptions', key: 'sidebar.prescriptions', icon: FileSearch, roles: ['admin', 'store_keeper'] },
+  // { href: '/prescriptions', key: 'sidebar.prescriptions', icon: FileSearch, roles: ['admin', 'store_keeper'] },
   { href: '/stock', key: 'sidebar.stockByLocation', icon: Warehouse, roles: ['admin', 'store_keeper'] },
   { href: '/transfers', key: 'sidebar.transfers', icon: Warehouse, roles: ['admin', 'store_keeper'] },
   { href: '/expiry-management', key: 'sidebar.expiryManagement', icon: FileSearch, roles: ['admin', 'store_keeper'] },
 
   { href: '/reports', key: 'sidebar.reports', icon: BarChart3, roles: ['admin'] },
-  { href: '/staff', key: 'sidebar.staffManagement', icon: Users, roles: ['admin'] },
+  // { href: '/staff', key: 'sidebar.staffManagement', icon: Users, roles: ['admin'] },
   { href: '/settings/security', key: 'sidebar.settings', icon: Settings, roles: ['admin', 'store_keeper', 'cashier'] },
   { href: '/traceability', key: 'sidebar.batchTraceability', icon: FileSearch, roles: ['admin', 'store_keeper'] },
 ];

@@ -40,7 +40,7 @@ const formatETB = (value: number) =>
 export function ExpiryReport() {
   const { t } = useTranslations();
   const [activeTab, setActiveTab] = useState('all');
-  const [withinDays, setWithinDays] = useState(90);
+  const [withinDays, setWithinDays] = useState(270);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [isExporting, setIsExporting] = useState(false);
@@ -237,14 +237,14 @@ export function ExpiryReport() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">{t('reports.window')}:</span>
-              {[30, 60, 90].map((days) => (
+              {[30, 60, 90, 180, 270].map((days) => (
                 <Button
                   key={days}
                   variant={withinDays === days ? 'default' : 'secondary'}
                   size="sm"
                   onClick={() => { setWithinDays(days); setPage(1); }}
                 >
-                  {days}d
+                  {days === 180 ? '6mo' : days === 270 ? '9mo' : `${days}d`}
                 </Button>
               ))}
             </div>
@@ -268,7 +268,7 @@ export function ExpiryReport() {
               isLoading={isLoading}
               isFetching={isFetching}
               emptyMessage={t('reports.noExpiryData')}
-              keyExtractor={(row) => row.batchId}
+              keyExtractor={(row) => `${row.batchId}-${row.locationName}`}
               pagination={response ? {
                 ...response.meta,
                 onPageChange: setPage,

@@ -77,7 +77,11 @@ export function BatchPickerModal({
   };
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) onClose();
+    if (nextOpen) {
+      setPendingBatchId(null);
+    } else {
+      onClose();
+    }
   };
 
   return (

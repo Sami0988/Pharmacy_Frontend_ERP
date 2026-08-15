@@ -14,7 +14,7 @@ export function InvoiceUploadField({ onChange, value, error }: InvoiceUploadFiel
   const { t } = useTranslations();
 
   return (
-    <FormField label={t('goodsReceipts.invoiceDocument')} required error={error}>
+    <FormField label={t('goodsReceipts.invoiceDocument')} error={error}>
       <p className="text-xs text-muted-foreground mb-2">
         {t('goodsReceipts.invoiceDescription')}
       </p>
@@ -24,7 +24,6 @@ export function InvoiceUploadField({ onChange, value, error }: InvoiceUploadFiel
         onChange={onChange}
         value={value}
         error={error}
-        required
       />
     </FormField>
   );

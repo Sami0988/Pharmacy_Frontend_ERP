@@ -11,7 +11,7 @@ export const goodsReceiptsApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ['GoodsReceipt', 'Batch'],
   endpoints: (builder) => ({
-    getGoodsReceipts: builder.query<PaginatedResponse<GoodsReceipt>, { supplierId?: string; branchId?: string; page?: number; limit?: number }>({
+    getGoodsReceipts: builder.query<PaginatedResponse<GoodsReceipt>, { supplier?: string; branchId?: string; page?: number; limit?: number }>({
       query: (params) => ({
         url: '/goods-receipts',
         params,
