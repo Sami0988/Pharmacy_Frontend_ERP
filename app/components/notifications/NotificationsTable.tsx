@@ -94,7 +94,7 @@ export function NotificationsTable({ data: notifications, isLoading, isFetching,
       header: t('notifications.message'),
       render: (n) => (
         <Link href={linkTarget(n)} className="text-sm text-foreground hover:text-primary line-clamp-2">
-          {n.message}
+          {n.message?.replaceAll('Dispatcher', 'Dispenser')}
         </Link>
       ),
     },

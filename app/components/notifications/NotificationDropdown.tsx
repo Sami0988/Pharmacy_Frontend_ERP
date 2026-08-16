@@ -77,7 +77,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
                   onClick={onClose}
                   className="text-sm text-foreground hover:text-primary line-clamp-2"
                 >
-                  {n.message}
+                  {n.message?.replaceAll('Dispatcher', 'Dispenser')}
                 </Link>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {new Date(n.createdAt).toLocaleString()}
