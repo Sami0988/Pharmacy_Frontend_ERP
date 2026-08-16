@@ -59,7 +59,7 @@ export function ItemForm({ itemId }: ItemFormProps) {
       genericName: '',
       category: '',
       unit: '',
-      reorderLevel: 0,
+      reorderLevel: 5,
       isControlledSubstance: false,
     },
   });
@@ -145,7 +145,7 @@ export function ItemForm({ itemId }: ItemFormProps) {
             <Input {...register('name')} placeholder={t('items.itemNamePlaceholder')} />
           </FormField>
 
-          <FormField label={t('inventory.genericName')} error={errors.genericName?.message}>
+          <FormField label={t('items.brandName')} error={errors.genericName?.message}>
             <Input {...register('genericName')} placeholder={t('items.genericNamePlaceholder')} />
           </FormField>
 

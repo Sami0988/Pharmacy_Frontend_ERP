@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/Select';
 import { useTranslations } from '@/lib/i18n';
 
+const paymentMethodEnum = z.enum(['cash', 'credit', 'mobile_bank']);
+
 const paymentDueDateTypeEnum = z.enum([
   'one_month',
   'two_months',
@@ -63,6 +65,7 @@ export function GoodsReceiptForm() {
       receiptDate: z.string().min(1, t('goodsReceipts.receiptDateRequired')),
       items: z.array(batchItemSchema).min(1, t('goodsReceipts.atLeastOneItem')),
       taxPaid: z.boolean().default(false),
+      paymentMethod: paymentMethodEnum.default('cash'),
       paymentDueDateType: paymentDueDateTypeEnum.default('one_month'),
       paymentDueDate: z.string().optional(),
     })
@@ -81,6 +84,12 @@ export function GoodsReceiptForm() {
       { value: 'one_year', label: t('goodsReceipts.oneYear') },
       { value: 'other', label: t('goodsReceipts.other') },
     ];
+
+  const PAYMENT_METHOD_OPTIONS: { value: z.infer<typeof paymentMethodEnum>; label: string }[] = [
+    { value: 'cash', label: t('goodsReceipts.cash') },
+    { value: 'credit', label: t('goodsReceipts.credit') },
+    { value: 'mobile_bank', label: t('goodsReceipts.mobileBank') },
+  ];
 
   const supplierSchema = z.object({
     name: z.string().min(1, t('goodsReceipts.supplierNameRequired')),
@@ -115,6 +124,7 @@ export function GoodsReceiptForm() {
       supplierId: '',
       receiptDate: new Date().toISOString().split('T')[0],
       taxPaid: false,
+      paymentMethod: 'cash',
       paymentDueDateType: 'one_month',
       paymentDueDate: undefined,
       items: [
@@ -176,6 +186,7 @@ export function GoodsReceiptForm() {
     formData.append('receiptDate', data.receiptDate);
     formData.append('items', JSON.stringify(data.items));
     formData.append('taxPaid', String(data.taxPaid ?? false));
+    formData.append('paymentMethod', data.paymentMethod ?? 'cash');
     formData.append('paymentDueDateType', data.paymentDueDateType);
     if (data.paymentDueDate) {
       formData.append('paymentDueDate', data.paymentDueDate);
@@ -284,6 +295,34 @@ export function GoodsReceiptForm() {
                   onChange={field.onChange}
                   label={t('goodsReceipts.taxPaidDescription')}
                 />
+              )}
+            />
+          </FormField>
+
+          <FormField
+            label={t('goodsReceipts.paymentMethod')}
+            required
+            error={errors.paymentMethod?.message}
+          >
+            <Controller
+              name="paymentMethod"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('goodsReceipts.selectPaymentMethod')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_METHOD_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             />
           </FormField>

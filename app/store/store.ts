@@ -13,6 +13,7 @@ import { notificationsApi } from './api/notifications-api-slice';
 import { dashboardApi } from './api/dashboard-api-slice';
 import { searchApi } from './api/search-api-slice';
 import { reportsApi } from './api/reports-api-slice';
+import { stockAdjustmentsApi } from './api/stock-adjustments-api-slice';
 import authReducer from './slices/auth-slice';
 
 export const makeStore = () => {
@@ -32,6 +33,7 @@ export const makeStore = () => {
       [dashboardApi.reducerPath]: dashboardApi.reducer,
       [searchApi.reducerPath]: searchApi.reducer,
       [reportsApi.reducerPath]: reportsApi.reducer,
+      [stockAdjustmentsApi.reducerPath]: stockAdjustmentsApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware()
@@ -47,7 +49,8 @@ export const makeStore = () => {
         .concat(notificationsApi.middleware)
         .concat(dashboardApi.middleware)
         .concat(searchApi.middleware)
-        .concat(reportsApi.middleware),
+        .concat(reportsApi.middleware)
+        .concat(stockAdjustmentsApi.middleware),
   });
 };
 

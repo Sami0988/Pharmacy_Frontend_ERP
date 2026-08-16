@@ -20,7 +20,7 @@ export function SalesHistoryTable({ sales }: SalesHistoryTableProps) {
       header: t('traceability.saleNumber'),
       render: (entry) => (
         <Link href={`/sales/${entry.saleId}`} className="text-blue-600 hover:text-blue-800 font-medium">
-          {entry.saleNumber}
+          {entry.saleNumber || entry.saleId.slice(0, 8).toUpperCase()}
         </Link>
       ),
     },

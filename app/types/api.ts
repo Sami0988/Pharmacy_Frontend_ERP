@@ -189,6 +189,8 @@ export type PaymentDueDateType =
   | 'one_year'
   | 'other';
 
+export type GoodsReceiptPaymentMethod = 'cash' | 'credit' | 'mobile_bank';
+
 export interface GoodsReceipt {
   id: string;
   grnNumber: string;
@@ -203,6 +205,7 @@ export interface GoodsReceipt {
   taxPaid: boolean;
   paymentDueDate: string;
   paymentDueDateType: PaymentDueDateType;
+  paymentMethod: GoodsReceiptPaymentMethod;
   createdAt: string;
   updatedAt: string;
 }
@@ -233,6 +236,7 @@ export interface CreateGoodsReceiptDto {
   taxPaid?: boolean;
   paymentDueDateType?: PaymentDueDateType;
   paymentDueDate?: string;
+  paymentMethod?: GoodsReceiptPaymentMethod;
 }
 
 export interface Payment {
@@ -617,4 +621,42 @@ export interface DeadStockItem {
   totalQuantityOnHand: number;
   tiedUpValue: number;
   daysSinceLastSale: number | null;
+}
+
+export interface StockAdjustmentMovement {
+  id: string;
+  batchId: string;
+  locationId: string;
+  type: 'adjustment';
+  quantity: number;
+  reason: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface StockAdjustmentResponse {
+  movement: StockAdjustmentMovement;
+  previousQty: number;
+  newQty: number;
+  delta: number;
+}
+
+export interface CreateStockAdjustmentDto {
+  batchId: string;
+  locationId: string;
+  newQuantity: number;
+  reason: string;
+}
+
+export interface BatchSearchResult {
+  id: string;
+  batchNo: string;
+  itemId: string;
+  grnId: string;
+  expiryDate: string;
+  unitCost: string;
+  sellingPrice: string;
+  quantityReceived: number;
+  qrCodeUrl?: string;
+  createdAt: string;
 }

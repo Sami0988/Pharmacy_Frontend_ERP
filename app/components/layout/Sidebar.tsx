@@ -25,6 +25,7 @@ import {
   FileSearch,
   Receipt,
   Pill,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 interface NavItem {
@@ -45,6 +46,7 @@ export const navKeys: NavItem[] = [
   // { href: '/prescriptions', key: 'sidebar.prescriptions', icon: FileSearch, roles: ['admin', 'store_keeper'] },
   { href: '/stock', key: 'sidebar.stockByLocation', icon: Warehouse, roles: ['admin', 'store_keeper'] },
   { href: '/transfers', key: 'sidebar.transfers', icon: Warehouse, roles: ['admin', 'store_keeper'] },
+  { href: '/stock-adjustments/new', key: 'sidebar.stockAdjustments', icon: SlidersHorizontal, roles: ['admin', 'store_keeper'] },
   { href: '/expiry-management', key: 'sidebar.expiryManagement', icon: FileSearch, roles: ['admin', 'store_keeper'] },
 
   { href: '/reports', key: 'sidebar.reports', icon: BarChart3, roles: ['admin'] },

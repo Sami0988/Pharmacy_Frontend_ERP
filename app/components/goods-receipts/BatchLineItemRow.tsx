@@ -34,6 +34,7 @@ interface BatchLineItemRowFormValues {
     sellingPrice?: number;
   }>;
   taxPaid: boolean;
+  paymentMethod: 'cash' | 'credit' | 'mobile_bank';
   paymentDueDateType: 'one_month' | 'two_months' | 'six_months' | 'one_year' | 'other';
   paymentDueDate?: string;
 }

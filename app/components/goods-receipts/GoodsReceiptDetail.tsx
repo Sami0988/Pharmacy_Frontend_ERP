@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { DataTable, Column } from '@/components/ui/DataTable';
-import type { GoodsReceiptDetail as GoodsReceiptDetailType, Batch } from '@/types/api';
+import type { GoodsReceiptDetail as GoodsReceiptDetailType, Batch, GoodsReceiptPaymentMethod } from '@/types/api';
 
 interface GoodsReceiptDetailProps {
   receipt: GoodsReceiptDetailType;
@@ -23,6 +23,12 @@ function isNearExpiry(expiryDate: string): boolean {
 function isExpired(expiryDate: string): boolean {
   return new Date(expiryDate) < new Date();
 }
+
+const PAYMENT_METHOD_LABELS: Record<GoodsReceiptPaymentMethod, string> = {
+  cash: 'Cash',
+  credit: 'Credit',
+  mobile_bank: 'Mobile Bank',
+};
 
 const batchColumns: Column<Batch>[] = [
   { key: 'itemName', header: 'Item' },
@@ -109,6 +115,12 @@ export function GoodsReceiptDetail({ receipt }: GoodsReceiptDetailProps) {
                 <dd className="mt-1 text-sm font-medium text-foreground">{receipt.supplierPhone}</dd>
               </div>
             )}
+            <div>
+              <dt className="text-sm text-muted-foreground">Payment Method</dt>
+              <dd className="mt-1 text-sm font-medium text-foreground">
+                {PAYMENT_METHOD_LABELS[receipt.paymentMethod] ?? receipt.paymentMethod}
+              </dd>
+            </div>
           </dl>
         </CardContent>
       </Card>
