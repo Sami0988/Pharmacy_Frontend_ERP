@@ -14,12 +14,15 @@ import { Textarea } from '@/components/ui/Textarea';
 import { FormField } from '@/components/ui/FormField';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { useAppDispatch } from '@/store/store';
 import {
   useSearchBatchesQuery,
   useLazySearchBatchesQuery,
   useLazyGetBatchByIdQuery,
   useCreateStockAdjustmentMutation,
+  stockAdjustmentsApi,
 } from '@/store/api/stock-adjustments-api-slice';
+import { transfersApi } from '@/store/api/transfers-api-slice';
 import type { BatchWithStock } from '@/store/api/stock-adjustments-api-slice';
 import { useGetItemsQuery } from '@/store/api/items-api-slice';
 import type { BatchSearchResult } from '@/types/api';
@@ -28,6 +31,7 @@ import { useTranslations } from '@/lib/i18n';
 export function StockAdjustmentForm() {
   const router = useRouter();
   const { t } = useTranslations();
+  const dispatch = useAppDispatch();
 
   const [batchSearch, setBatchSearch] = useState('');
   const [selectedBatch, setSelectedBatch] = useState<BatchSearchResult | null>(null);
@@ -197,7 +201,10 @@ export function StockAdjustmentForm() {
               </p>
             </div>
             <div className="mt-6 flex justify-center gap-3">
-              <Button variant="secondary" onClick={() => window.location.href = '/stock'}>
+              <Button variant="secondary" onClick={() => {
+                dispatch(transfersApi.util.invalidateTags(['StockByLocation']));
+                router.push('/stock');
+              }}>
                 {t('stockAdjustments.backToStock')}
               </Button>
               <Button onClick={() => {
@@ -336,7 +343,10 @@ export function StockAdjustmentForm() {
         <Button
           type="button"
           variant="secondary"
-          onClick={() => window.location.href = '/stock'}
+          onClick={() => {
+            dispatch(transfersApi.util.invalidateTags(['StockByLocation']));
+            router.push('/stock');
+          }}
           disabled={isCreating}
         >
           {t('common.cancel')}
