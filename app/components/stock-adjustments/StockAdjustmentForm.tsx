@@ -18,7 +18,6 @@ import {
   useSearchBatchesQuery,
   useLazySearchBatchesQuery,
   useLazyGetBatchByIdQuery,
-  useGetLocationsQuery,
   useCreateStockAdjustmentMutation,
 } from '@/store/api/stock-adjustments-api-slice';
 import type { BatchWithStock } from '@/store/api/stock-adjustments-api-slice';
@@ -60,23 +59,14 @@ export function StockAdjustmentForm() {
     return map;
   }, [itemsData]);
 
-  const { data: locationsData } = useGetLocationsQuery();
-  const locationNameMap = useMemo(() => {
-    const map = new Map<string, string>();
-    if (locationsData) {
-      locationsData.forEach((loc) => map.set(loc.id, loc.name));
-    }
-    return map;
-  }, [locationsData]);
-
   const locationOptions = useMemo(() => {
     if (!batchDetails?.quantitiesByLocation) return [];
     return batchDetails.quantitiesByLocation.map((ql, index) => ({
       id: ql.locationId,
-      name: locationNameMap.get(ql.locationId) ?? (index === 0 ? 'Store' : 'Dispatcher'),
+      name: index === 0 ? 'Store' : 'Dispatcher',
       quantity: Number(ql.quantity),
     }));
-  }, [batchDetails, locationNameMap]);
+  }, [batchDetails]);
 
   const currentQuantity = useMemo(() => {
     if (!batchDetails || !selectedLocationId) return null;

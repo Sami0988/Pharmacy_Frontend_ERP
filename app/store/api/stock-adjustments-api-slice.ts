@@ -5,7 +5,6 @@ import type {
   CreateStockAdjustmentDto,
   BatchSearchResult,
   PaginatedResponse,
-  Location,
 } from '@/types/api';
 
 export interface BatchWithStock {
@@ -36,10 +35,6 @@ export const stockAdjustmentsApi = createApi({
       query: (id) => `/batches/${id}`,
     }),
 
-    getLocations: builder.query<Location[], void>({
-      query: () => '/locations',
-    }),
-
     createStockAdjustment: builder.mutation<StockAdjustmentResponse, CreateStockAdjustmentDto>({
       query: (body) => ({
         url: '/stock-adjustments',
@@ -59,6 +54,5 @@ export const {
   useLazySearchBatchesQuery,
   useGetBatchByIdQuery,
   useLazyGetBatchByIdQuery,
-  useGetLocationsQuery,
   useCreateStockAdjustmentMutation,
 } = stockAdjustmentsApi;
