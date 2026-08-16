@@ -14,13 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pharmacy ERP",
-  description: "Pharmacy inventory, sales, and traceability management",
+  title: "Hawi Pharmacy",
+  description: "Hawi Pharmacy inventory, sales, and traceability management",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icons/favicon.svg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "PharmERP",
+    title: "Hawi Pharmacy",
   },
 };
 

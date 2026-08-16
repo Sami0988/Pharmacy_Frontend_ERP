@@ -99,7 +99,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                 <Pill className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">PharmaCore</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Hawi Pharmacy</p>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">Pharmacy Management</p>
               </div>
             </motion.div>

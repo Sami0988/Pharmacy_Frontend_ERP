@@ -55,7 +55,7 @@ export function SaleDetail({ sale }: SaleDetailProps) {
     setIsDownloading(true);
     try {
       await downloadReceiptPdf({
-        storeName: 'Pharmacy Name',
+        storeName: 'Hawi Pharmacy',
         saleDate: new Date(sale.saleDate).toLocaleDateString('en-GB', {
           day: '2-digit',
           month: 'short',
@@ -86,7 +86,7 @@ export function SaleDetail({ sale }: SaleDetailProps) {
     const saleDate = new Date(sale.saleDate || sale.createdAt);
     const validDate = isNaN(saleDate.getTime()) ? new Date() : saleDate;
     printReceipt({
-      storeName: 'Pharmacy Name',
+      storeName: 'Hawi Pharmacy',
       saleDate: validDate.toLocaleDateString('en-GB', {
         day: '2-digit',
         month: '2-digit',
