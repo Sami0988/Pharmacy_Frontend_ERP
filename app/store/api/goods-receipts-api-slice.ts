@@ -41,6 +41,17 @@ export const goodsReceiptsApi = createApi({
         { type: 'Batch', id: 'LIST' },
       ],
     }),
+
+    deleteGoodsReceipt: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/goods-receipts/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [
+        { type: 'GoodsReceipt', id: 'LIST' },
+        { type: 'Batch', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
@@ -48,4 +59,5 @@ export const {
   useGetGoodsReceiptsQuery,
   useGetGoodsReceiptQuery,
   useCreateGoodsReceiptMutation,
+  useDeleteGoodsReceiptMutation,
 } = goodsReceiptsApi;
