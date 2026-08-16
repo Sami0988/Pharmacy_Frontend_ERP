@@ -207,7 +207,7 @@ export function StockAdjustmentForm() {
               </p>
             </div>
             <div className="mt-6 flex justify-center gap-3">
-              <Button variant="secondary" onClick={() => router.push('/stock')}>
+              <Button variant="secondary" onClick={() => window.location.href = '/stock'}>
                 {t('stockAdjustments.backToStock')}
               </Button>
               <Button onClick={() => {
@@ -346,7 +346,7 @@ export function StockAdjustmentForm() {
         <Button
           type="button"
           variant="secondary"
-          onClick={() => router.push('/stock')}
+          onClick={() => window.location.href = '/stock'}
           disabled={isCreating}
         >
           {t('common.cancel')}
