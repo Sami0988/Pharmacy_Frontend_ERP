@@ -67,7 +67,7 @@ export function StockAdjustmentForm() {
     if (!batchDetails?.quantitiesByLocation) return [];
     return batchDetails.quantitiesByLocation.map((ql, index) => ({
       id: ql.locationId,
-      name: index === 0 ? 'Store' : 'Dispatcher',
+      name: index === 0 ? 'Store' : 'Dispencer',
       quantity: Number(ql.quantity),
     }));
   }, [batchDetails]);
