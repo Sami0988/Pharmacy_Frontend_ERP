@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Pencil } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -10,6 +10,7 @@ import type { GoodsReceiptDetail as GoodsReceiptDetailType, Batch, GoodsReceiptP
 
 interface GoodsReceiptDetailProps {
   receipt: GoodsReceiptDetailType;
+  showEdit?: boolean;
 }
 
 function isNearExpiry(expiryDate: string): boolean {
@@ -48,7 +49,33 @@ const batchColumns: Column<Batch>[] = [
       );
     },
   },
-  { key: 'quantityReceived', header: 'Quantity' },
+  {
+    key: 'quantityReceived',
+    header: 'Quantity',
+    render: (b) => {
+      if (b.packSize && b.numberOfPacks) {
+        return (
+          <div>
+            <span className="font-medium">{b.quantityReceived} units</span>
+            <span className="text-muted-foreground text-xs block">
+              ({b.numberOfPacks} packs × {b.packSize})
+            </span>
+          </div>
+        );
+      }
+      if (b.packSize && b.packSize > 0) {
+        return (
+          <div>
+            <span className="font-medium">{b.quantityReceived} units</span>
+            <span className="text-muted-foreground text-xs block">
+              ({Math.ceil(b.quantityReceived / b.packSize)} packs of {b.packSize})
+            </span>
+          </div>
+        );
+      }
+      return <span className="font-medium">{b.quantityReceived}</span>;
+    },
+  },
   {
     key: 'unitCost',
     header: 'Unit Cost',
@@ -60,7 +87,7 @@ const batchColumns: Column<Batch>[] = [
   },
 ];
 
-export function GoodsReceiptDetail({ receipt }: GoodsReceiptDetailProps) {
+export function GoodsReceiptDetail({ receipt, showEdit = true }: GoodsReceiptDetailProps) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -70,16 +97,24 @@ export function GoodsReceiptDetail({ receipt }: GoodsReceiptDetailProps) {
             Receipt Date: {new Date(receipt.receiptDate).toLocaleDateString()}
           </p>
         </div>
-        {receipt.invoiceDocumentUrl && (
-          <div className="flex gap-2">
+        <div className="flex gap-2">
+          {showEdit && (
+            <Link href={`/goods-receipts/${receipt.id}/edit`}>
+              <Button variant="secondary">
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            </Link>
+          )}
+          {receipt.invoiceDocumentUrl && (
             <a href={receipt.invoiceDocumentUrl} target="_blank" rel="noopener noreferrer">
               <Button variant="secondary">
                 <ExternalLink className="h-4 w-4 mr-2" />
                 View Invoice
               </Button>
             </a>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <Card>

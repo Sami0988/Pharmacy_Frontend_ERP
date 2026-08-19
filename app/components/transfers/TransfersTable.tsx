@@ -26,7 +26,19 @@ export function TransfersTable({ data, isLoading, isFetching, pagination }: Tran
     {
       key: 'quantity',
       header: t('transfers.quantity'),
-      render: (row) => <span className="font-medium">{row.quantity}</span>,
+      render: (row) => {
+        if (row.packSize && row.numberOfPacks) {
+          return (
+            <div>
+              <span className="font-medium">{row.quantity} units</span>
+              <span className="text-muted-foreground text-xs block">
+                ({row.numberOfPacks} packs × {row.packSize})
+              </span>
+            </div>
+          );
+        }
+        return <span className="font-medium">{row.quantity}</span>;
+      },
     },
     {
       key: 'fromLocationName',

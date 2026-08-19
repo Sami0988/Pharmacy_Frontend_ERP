@@ -11,6 +11,7 @@ import { useTranslations } from '@/lib/i18n';
 interface FefoSuggestionListProps {
   itemId: string;
   quantityNeeded: number;
+  transferMode: 'packs' | 'quantity';
   selectedBatchId: string | null;
   onSelectBatch: (batchId: string, quantity: number) => void;
 }
@@ -29,25 +30,40 @@ function getExpiryBadgeVariant(daysUntilExpiry: number): 'danger' | 'default' | 
 
 interface BatchAllocation {
   batch: FefoSuggestion;
-  allocatedQuantity: number;
+  allocatedPacks: number;
+  allocatedUnits: number;
 }
 
 function calculateAllocations(
   suggestions: FefoSuggestion[],
-  quantityNeeded: number
+  quantityNeeded: number,
+  transferMode: 'packs' | 'quantity'
 ): BatchAllocation[] {
   const sorted = [...suggestions].sort(
     (a, b) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
   );
 
   const allocations: BatchAllocation[] = [];
-  let remaining = quantityNeeded;
 
-  for (const batch of sorted) {
-    if (remaining <= 0) break;
-    const allocQty = Math.min(batch.availableQuantity, remaining);
-    allocations.push({ batch, allocatedQuantity: allocQty });
-    remaining -= allocQty;
+  if (transferMode === 'packs') {
+    let packsRemaining = quantityNeeded;
+    for (const batch of sorted) {
+      if (packsRemaining <= 0) break;
+      const availablePacks = batch.availablePacks ?? (batch.packSize ? Math.floor(batch.availableQuantity / batch.packSize) : 0);
+      const allocPacks = Math.min(availablePacks, packsRemaining);
+      const packSize = batch.packSize || 1;
+      allocations.push({ batch, allocatedPacks: allocPacks, allocatedUnits: allocPacks * packSize });
+      packsRemaining -= allocPacks;
+    }
+  } else {
+    let unitsRemaining = quantityNeeded;
+    for (const batch of sorted) {
+      if (unitsRemaining <= 0) break;
+      const allocUnits = Math.min(batch.availableQuantity, unitsRemaining);
+      const packSize = batch.packSize || 1;
+      allocations.push({ batch, allocatedPacks: Math.ceil(allocUnits / packSize), allocatedUnits: allocUnits });
+      unitsRemaining -= allocUnits;
+    }
   }
 
   return allocations;
@@ -56,6 +72,7 @@ function calculateAllocations(
 export function FefoSuggestionList({
   itemId,
   quantityNeeded,
+  transferMode,
   selectedBatchId,
   onSelectBatch,
 }: FefoSuggestionListProps) {
@@ -69,12 +86,25 @@ export function FefoSuggestionList({
 
   const allocations = useMemo(() => {
     if (batchSuggestions.length === 0) return [];
-    return calculateAllocations(batchSuggestions, quantityNeeded);
-  }, [batchSuggestions, quantityNeeded]);
+    return calculateAllocations(batchSuggestions, quantityNeeded, transferMode);
+  }, [batchSuggestions, quantityNeeded, transferMode]);
 
-  const totalAvailable = useMemo(() => {
-    return batchSuggestions.reduce((sum, s) => sum + s.availableQuantity, 0);
+  const totalAvailablePacks = useMemo(() => {
+    return batchSuggestions.reduce((sum, s) => {
+      const packs = s.availablePacks ?? (s.packSize ? Math.floor(s.availableQuantity / s.packSize) : 0);
+      return sum + packs;
+    }, 0);
   }, [batchSuggestions]);
+
+  const canFulfill = useMemo(() => {
+    if (transferMode === 'packs') {
+      return totalAvailablePacks >= quantityNeeded;
+    }
+    const totalAvailableUnits = batchSuggestions.reduce((sum, s) => sum + s.availableQuantity, 0);
+    return totalAvailableUnits >= quantityNeeded;
+  }, [transferMode, totalAvailablePacks, quantityNeeded, batchSuggestions]);
+
+  const recommendedBatchId = allocations.length > 0 ? allocations[0].batch.batchId : null;
 
   if (!itemId || quantityNeeded <= 0) {
     return null;
@@ -104,9 +134,6 @@ export function FefoSuggestionList({
     );
   }
 
-  const recommendedBatchId = allocations.length > 0 ? allocations[0].batch.batchId : null;
-  const canFulfill = totalAvailable >= quantityNeeded;
-
   return (
     <Card>
       <CardHeader>
@@ -122,7 +149,7 @@ export function FefoSuggestionList({
       <CardContent className="space-y-4">
         {!canFulfill && (
           <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
-            {t('transfers.insufficientStock').replace('{available}', String(totalAvailable)).replace('{needed}', String(quantityNeeded))}
+            {t('transfers.insufficientStock').replace('{available}', String(totalAvailablePacks)).replace('{needed}', String(quantityNeeded))}
           </div>
         )}
 
@@ -140,6 +167,7 @@ export function FefoSuggestionList({
             const isRecommended = batch.batchId === recommendedBatchId;
             const isSelected = batch.batchId === selectedBatchId;
             const allocation = allocations.find((a) => a.batch.batchId === batch.batchId);
+            const availablePacks = batch.availablePacks ?? (batch.packSize ? Math.floor(batch.availableQuantity / batch.packSize) : 0);
 
             return (
               <div
@@ -167,14 +195,20 @@ export function FefoSuggestionList({
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {t('transfers.expiresOn')} {new Date(batch.expiryDate).toLocaleDateString()} ·{' '}
-                      {t('transfers.available')}: {batch.availableQuantity}
+                      {batch.packSize && batch.packSize > 1 ? (
+                        <>{availablePacks} packs ({batch.availableQuantity} units)</>
+                      ) : (
+                        <>{t('transfers.available')}: {batch.availableQuantity} units</>
+                      )}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   {allocation && (
                     <span className="text-sm font-medium text-blue-700">
-                      {t('transfers.transferQty').replace('{qty}', String(allocation.allocatedQuantity))}
+                      {transferMode === 'packs'
+                        ? `${allocation.allocatedPacks} packs (${allocation.allocatedUnits} units)`
+                        : `${allocation.allocatedUnits} units`}
                     </span>
                   )}
                   <Button
@@ -183,7 +217,7 @@ export function FefoSuggestionList({
                     onClick={() =>
                       onSelectBatch(
                         batch.batchId,
-                        allocation?.allocatedQuantity || batch.availableQuantity
+                        allocation?.allocatedPacks || availablePacks
                       )
                     }
                   >

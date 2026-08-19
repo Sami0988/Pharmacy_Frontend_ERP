@@ -135,7 +135,19 @@ export function ExpiryReport() {
     {
       key: 'quantity',
       header: t('reports.qty'),
-      render: (row) => <span className="font-medium">{row.quantity}</span>,
+      render: (row) => {
+        if (row.packSize && row.packSize > 1) {
+          return (
+            <div>
+              <span className="font-medium">{row.quantity} units</span>
+              <span className="text-muted-foreground text-xs block">
+                ({Math.ceil(row.quantity / row.packSize)} packs of {row.packSize})
+              </span>
+            </div>
+          );
+        }
+        return <span className="font-medium">{row.quantity}</span>;
+      },
     },
     {
       key: 'unitCost',

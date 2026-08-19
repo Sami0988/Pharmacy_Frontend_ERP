@@ -134,7 +134,11 @@ export function BatchPickerModal({
                     </div>
                     <p className="text-sm text-muted-foreground">
                       Exp: {new Date(batch.expiryDate).toLocaleDateString()} ·{' '}
-                      {batch.availableQuantity} available
+                      {batch.packSize && batch.packSize > 1 ? (
+                        <>{batch.availableQuantity} units ({Math.ceil(batch.availableQuantity / batch.packSize)} packs of {batch.packSize})</>
+                      ) : (
+                        <>{batch.availableQuantity} units</>
+                      )}
                     </p>
                   </div>
                   <span className="text-sm font-medium text-foreground whitespace-nowrap">
@@ -142,6 +146,9 @@ export function BatchPickerModal({
                       style: 'currency',
                       currency: 'ETB',
                     })}
+                    {batch.packSize && batch.packSize > 1 && (
+                      <span className="text-xs text-muted-foreground block">/unit</span>
+                    )}
                   </span>
                 </label>
               );

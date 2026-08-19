@@ -16,7 +16,7 @@ export interface BatchWithStock {
   sellingPrice: string;
   quantityReceived: number;
   supplierName: string;
-  quantitiesByLocation: { locationId: string; quantity: string }[];
+  quantitiesByLocation: { locationId: string; quantity: string; packSize?: number; numberOfPacks?: number }[];
 }
 
 export const stockAdjustmentsApi = createApi({

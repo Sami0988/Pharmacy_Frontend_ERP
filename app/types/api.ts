@@ -174,6 +174,8 @@ export interface Batch {
   batchNo: string;
   expiryDate: string;
   quantityReceived: number;
+  numberOfPacks?: number;
+  packSize?: number;
   unitCost: number;
   sellingPrice?: number;
   markupPercentage?: number;
@@ -221,10 +223,30 @@ export interface CreateGoodsReceiptItemDto {
   itemId: string;
   batchNo: string;
   expiryDate: string;
-  quantityReceived: number;
+  numberOfPacks: number;
+  packSize: number;
   unitCost: number;
   markupPercentage?: number;
   sellingPrice?: number;
+}
+
+export interface UpdateGoodsReceiptItemDto {
+  batchId: string;
+  batchNo?: string;
+  expiryDate?: string;
+  numberOfPacks?: number;
+  packSize?: number;
+  unitCost?: number;
+  sellingPrice?: number;
+}
+
+export interface UpdateGoodsReceiptDto {
+  receiptDate?: string;
+  taxPaid?: boolean;
+  paymentDueDateType?: PaymentDueDateType;
+  paymentDueDate?: string;
+  paymentMethod?: GoodsReceiptPaymentMethod;
+  items?: UpdateGoodsReceiptItemDto[];
 }
 
 export interface CreateGoodsReceiptDto {
@@ -299,6 +321,9 @@ export interface Transfer {
   itemId: string;
   itemName: string;
   quantity: number;
+  numberOfPacks?: number;
+  packSize?: number;
+  transferQuantity?: number;
   fromLocationId: string;
   fromLocationName: string;
   toLocationId: string;
@@ -311,7 +336,8 @@ export interface Transfer {
 
 export interface CreateTransferDto {
   batchId: string;
-  quantity: number;
+  numberOfPacks?: number;
+  quantity?: number;
   fromLocationId?: string;
   toLocationId?: string;
 }
@@ -319,9 +345,13 @@ export interface CreateTransferDto {
 export interface StockByLocationRow {
   itemId: string;
   itemName: string;
+  packSize?: number;
   storeQuantity: number;
+  storePacks?: number;
   dispatcherQuantity: number;
+  dispatcherPacks?: number;
   totalQuantity: number;
+  totalPacks?: number;
   totalValueAtCost?: number;
   sellingPrice?: number;
 }
@@ -331,6 +361,8 @@ export interface FefoSuggestion {
   batchNo: string;
   expiryDate: string;
   availableQuantity: number;
+  availablePacks?: number;
+  packSize?: number;
   daysUntilExpiry: number;
   sellingPrice: number;
 }
@@ -367,7 +399,7 @@ export interface SaleItem {
   itemId: string;
   itemName: string;
   batchId: string;
-  batchNumber: string;
+  batchNo: string;
   quantity: number;
   unitPrice: number;
   subtotal: number;
@@ -448,6 +480,8 @@ export interface TraceResult {
   documentUnavailable?: boolean;
   unitCost: number;
   quantityReceived: number;
+  packSize?: number;
+  numberOfPacks?: number;
   taxPaid: boolean;
   paymentDueDate?: string;
   paymentDueDateType?: string;
@@ -459,6 +493,7 @@ export interface TraceResult {
   totalSold: number;
   salesHistory: TraceSaleEntry[];
   transferHistory: TraceTransferEntry[];
+  currentStock?: { locationId: string; locationName: string; quantity: number; packSize?: number; numberOfPacks?: number }[];
 }
 
 export interface TraceSaleEntry {
@@ -580,6 +615,7 @@ export interface ExpiryBatch {
   itemName: string;
   locationName: string;
   quantity: number;
+  packSize?: number;
   unitCost: number;
   isExpired: boolean;
 }
@@ -611,6 +647,7 @@ export interface ExpiryReportBatch {
   itemName: string;
   locationName: string;
   quantity: number;
+  packSize?: number;
   unitCost: number;
   isExpired: boolean;
 }
@@ -652,11 +689,14 @@ export interface BatchSearchResult {
   id: string;
   batchNo: string;
   itemId: string;
+  itemName?: string;
+  genericName?: string;
   grnId: string;
   expiryDate: string;
   unitCost: string;
   sellingPrice: string;
   quantityReceived: number;
+  packSize?: number;
   qrCodeUrl?: string;
   createdAt: string;
 }

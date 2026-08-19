@@ -19,7 +19,7 @@ interface SaleDetailProps {
 
 const columns: Column<SaleItem & { returnable?: number }>[] = [
   { key: 'itemName', header: 'Item' },
-  { key: 'batchNumber', header: 'Batch' },
+  { key: 'batchNo', header: 'Batch' },
   { key: 'quantity', header: 'Qty' },
   {
     key: 'unitPrice',
@@ -30,8 +30,11 @@ const columns: Column<SaleItem & { returnable?: number }>[] = [
   {
     key: 'subtotal',
     header: 'Subtotal',
-    render: (i) =>
-      (i.subtotal ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'ETB' }),
+    render: (i) => {
+      const unitPrice = Number(i.unitPrice) || 0;
+      const qty = Number(i.quantity) || 0;
+      return (i.subtotal ?? unitPrice * qty).toLocaleString('en-US', { style: 'currency', currency: 'ETB' });
+    },
   },
   {
     key: 'returnable',
@@ -66,7 +69,7 @@ export function SaleDetail({ sale }: SaleDetailProps) {
         paymentMethod: sale.paymentMethod,
         items: sale.items.map((item) => ({
           itemName: item.itemName,
-          batchNo: item.batchNumber,
+          batchNo: item.batchNo,
           quantity: Number(item.quantity),
           unitPrice: Number(item.unitPrice),
           lineTotal: Number(item.subtotal),
@@ -103,7 +106,7 @@ export function SaleDetail({ sale }: SaleDetailProps) {
         const lineTotal = Number(item.subtotal) || (unitPrice * quantity);
         return {
           itemName: item.itemName,
-          batchNo: item.batchNumber,
+          batchNo: item.batchNo,
           quantity,
           unitPrice,
           lineTotal,

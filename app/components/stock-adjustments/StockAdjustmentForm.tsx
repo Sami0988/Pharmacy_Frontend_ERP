@@ -239,7 +239,7 @@ export function StockAdjustmentForm() {
               onSearchChange={handleBatchSearch}
               options={batchResults.map((b) => ({
                 value: b.id,
-                label: `${b.batchNo} — ${itemMap.get(b.itemId) ?? 'Unknown item'} (exp: ${new Date(b.expiryDate).toLocaleDateString()})`,
+                label: `${b.batchNo} — ${b.itemName || itemMap.get(b.itemId) || 'Unknown item'} (exp: ${new Date(b.expiryDate).toLocaleDateString()})`,
               }))}
               placeholder={t('stockAdjustments.searchBatch')}
               emptyMessage={isSearchingBatches ? t('stockAdjustments.searching') : t('stockAdjustments.noBatchesFound')}

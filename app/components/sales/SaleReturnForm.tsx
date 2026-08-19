@@ -80,7 +80,7 @@ export function SaleReturnForm({ saleId, saleItem, onClose }: SaleReturnFormProp
       <CardContent>
         <div className="mb-4 rounded-md bg-background p-3">
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium">{saleItem.itemName}</span> · Batch: {saleItem.batchNumber}
+            <span className="font-medium">{saleItem.itemName}</span> · Batch: {saleItem.batchNo}
           </p>
           <p className="text-sm text-muted-foreground">
             Originally sold: {saleItem.quantity} · Already returned: {saleItem.returnedQuantity} ·{' '}

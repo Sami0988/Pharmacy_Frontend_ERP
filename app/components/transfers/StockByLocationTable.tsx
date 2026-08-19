@@ -33,21 +33,42 @@ export function StockByLocationTable({ data, isLoading, isFetching, pagination }
       key: 'storeQuantity',
       header: t('stock.store'),
       render: (row) => (
-        <span className="font-medium">{row.storeQuantity}</span>
+        <div>
+          <span className="font-medium">{row.storeQuantity}</span>
+          {row.storePacks != null && row.storePacks > 0 && (
+            <span className="text-muted-foreground text-xs block">
+              ({row.storePacks} packs)
+            </span>
+          )}
+        </div>
       ),
     },
     {
       key: 'dispatcherQuantity',
       header: t('stock.dispatcher'),
       render: (row) => (
-        <span className="font-medium">{row.dispatcherQuantity}</span>
+        <div>
+          <span className="font-medium">{row.dispatcherQuantity}</span>
+          {row.dispatcherPacks != null && row.dispatcherPacks > 0 && (
+            <span className="text-muted-foreground text-xs block">
+              ({row.dispatcherPacks} packs)
+            </span>
+          )}
+        </div>
       ),
     },
     {
       key: 'totalQuantity',
       header: t('stock.total'),
       render: (row) => (
-        <span className="font-semibold">{row.totalQuantity}</span>
+        <div>
+          <span className="font-semibold">{row.totalQuantity}</span>
+          {row.totalPacks != null && row.totalPacks > 0 && (
+            <span className="text-muted-foreground text-xs block">
+              ({row.totalPacks} packs)
+            </span>
+          )}
+        </div>
       ),
     },
     {

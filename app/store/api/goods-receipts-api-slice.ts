@@ -42,6 +42,19 @@ export const goodsReceiptsApi = createApi({
       ],
     }),
 
+    updateGoodsReceipt: builder.mutation<GoodsReceiptDetail, { id: string; formData: FormData }>({
+      query: ({ id, formData }) => ({
+        url: `/goods-receipts/${id}`,
+        method: 'PATCH',
+        body: formData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'GoodsReceipt', id },
+        { type: 'GoodsReceipt', id: 'LIST' },
+        { type: 'Batch', id: 'LIST' },
+      ],
+    }),
+
     deleteGoodsReceipt: builder.mutation<void, string>({
       query: (id) => ({
         url: `/goods-receipts/${id}`,
@@ -59,5 +72,6 @@ export const {
   useGetGoodsReceiptsQuery,
   useGetGoodsReceiptQuery,
   useCreateGoodsReceiptMutation,
+  useUpdateGoodsReceiptMutation,
   useDeleteGoodsReceiptMutation,
 } = goodsReceiptsApi;

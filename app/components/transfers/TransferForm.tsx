@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Package, Hash } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
@@ -17,22 +15,18 @@ import { useGetStockByLocationQuery, useCreateTransferMutation } from '@/store/a
 import { FefoSuggestionList } from './FefoSuggestionList';
 import { useTranslations } from '@/lib/i18n';
 
+type TransferMode = 'packs' | 'quantity';
+
 export function TransferForm() {
   const router = useRouter();
   const { t } = useTranslations();
   const searchParams = useSearchParams();
   const preselectedItemId = searchParams.get('itemId') || '';
 
-  const transferSchema = z.object({
-    itemId: z.string().min(1, t('transfers.itemRequired')),
-    quantity: z.number().int().positive(t('transfers.quantityPositiveInteger')),
-  });
-
-  type TransferFormData = z.infer<typeof transferSchema>;
-
   const [selectedItemId, setSelectedItemId] = useState(preselectedItemId);
   const [itemSearch, setItemSearch] = useState('');
-  const [quantity, setQuantity] = useState<number>(0);
+  const [transferMode, setTransferMode] = useState<TransferMode>('packs');
+  const [inputValue, setInputValue] = useState<number>(0);
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
   const [transferSuccess, setTransferSuccess] = useState(false);
   const [transferError, setTransferError] = useState<string | null>(null);
@@ -61,48 +55,45 @@ export function TransferForm() {
     setSelectedBatchId(null);
   }, [selectedItemId]);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-    setValue,
-  } = useForm<TransferFormData>({
-    resolver: zodResolver(transferSchema),
-    defaultValues: {
-      itemId: preselectedItemId,
-      quantity: 0,
-    },
-  });
-
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const watchedQuantity = watch('quantity');
-
   useEffect(() => {
-    if (watchedQuantity !== quantity) {
-      setQuantity(watchedQuantity || 0);
-    }
-  }, [watchedQuantity, quantity]);
+    setInputValue(0);
+    setSelectedBatchId(null);
+  }, [transferMode]);
 
-  useEffect(() => {
-    if (selectedItemId) {
-      setValue('itemId', selectedItemId);
+  const quantityNeeded = useMemo(() => {
+    if (transferMode === 'packs') {
+      const packSize = selectedItemStock?.packSize || 1;
+      return inputValue * packSize;
     }
-  }, [selectedItemId, setValue]);
+    return inputValue;
+  }, [transferMode, inputValue, selectedItemStock]);
 
-  const onSubmit = async (data: TransferFormData) => {
+  const maxInput = useMemo(() => {
+    if (transferMode === 'packs') {
+      return selectedItemStock?.storePacks || 0;
+    }
+    return selectedItemStock?.storeQuantity || 0;
+  }, [transferMode, selectedItemStock]);
+
+  const onSubmit = async () => {
     if (!selectedBatchId) {
       setTransferError(t('transfers.selectBatchFirst'));
+      return;
+    }
+
+    if (inputValue <= 0) {
+      setTransferError(t('transfers.quantityPositiveInteger'));
       return;
     }
 
     setTransferError(null);
 
     try {
-      await createTransfer({
-        batchId: selectedBatchId,
-        quantity: data.quantity,
-      }).unwrap();
+      const payload = transferMode === 'packs'
+        ? { batchId: selectedBatchId, numberOfPacks: inputValue }
+        : { batchId: selectedBatchId, quantity: inputValue };
+
+      await createTransfer(payload).unwrap();
 
       setTransferSuccess(true);
       toast.success(t('transfers.createdSuccess'));
@@ -145,7 +136,7 @@ export function TransferForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div className="space-y-6">
       {transferError && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
           {transferError}
@@ -160,41 +151,127 @@ export function TransferForm() {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label={t('transfers.item')} required error={errors.itemId?.message}>
-              <SearchableSelect
-                value={selectedItemId}
-                onChange={(val) => {
-                  setSelectedItemId(val);
-                  setValue('itemId', val);
-                }}
-                onSearchChange={setItemSearch}
-                options={items.map((item) => ({
-                  value: item.id,
-                  label: `${item.name}${item.strength ? ` - ${item.strength}` : ''}`,
-                }))}
-                placeholder={t('transfers.selectItem')}
-                emptyMessage={t('transfers.noItemsFound')}
-              />
-            </FormField>
-
-            <FormField label={t('transfers.quantityToTransfer')} required error={errors.quantity?.message}>
-              <Input
-                type="number"
-                {...register('quantity', { valueAsNumber: true })}
-                min={1}
-                max={selectedItemStock?.storeQuantity || 0}
-                placeholder="0"
-              />
-            </FormField>
-          </div>
+          <FormField label={t('transfers.item')} required>
+            <SearchableSelect
+              value={selectedItemId}
+              onChange={(val) => setSelectedItemId(val)}
+              onSearchChange={setItemSearch}
+              options={items.map((item) => ({
+                value: item.id,
+                label: `${item.name}${item.strength ? ` - ${item.strength}` : ''}`,
+              }))}
+              placeholder={t('transfers.selectItem')}
+              emptyMessage={t('transfers.noItemsFound')}
+            />
+          </FormField>
 
           {selectedItemStock && (
             <div className="rounded-md bg-background p-3">
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium">{t('transfers.fromStore')}:</span> {selectedItemStock.storeQuantity} ·{' '}
-                <span className="font-medium">{t('transfers.toDispatcher')}:</span> {selectedItemStock.dispatcherQuantity}
+                <span className="font-medium">{t('transfers.fromStore')}:</span>{' '}
+                {selectedItemStock.storeQuantity} units
+                {selectedItemStock.storePacks != null && selectedItemStock.storePacks > 0 && (
+                  <> ({selectedItemStock.storePacks} packs)</>
+                )}
+                {' · '}
+                <span className="font-medium">{t('transfers.toDispatcher')}:</span>{' '}
+                {selectedItemStock.dispatcherQuantity} units
               </p>
+            </div>
+          )}
+
+          <div>
+            <label className="text-sm font-medium text-foreground mb-2 block">
+              {t('transfers.transferMode')}
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setTransferMode('packs')}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg border p-4 text-left transition-colors',
+                  transferMode === 'packs'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                )}
+              >
+                <div className={cn(
+                  'flex h-10 w-10 items-center justify-center rounded-full',
+                  transferMode === 'packs' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                )}>
+                  <Package className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={cn(
+                    'text-sm font-medium',
+                    transferMode === 'packs' ? 'text-primary' : 'text-foreground'
+                  )}>
+                    {t('transfers.byPacks')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('transfers.byPacksDescription')}
+                  </p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTransferMode('quantity')}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg border p-4 text-left transition-colors',
+                  transferMode === 'quantity'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                )}
+              >
+                <div className={cn(
+                  'flex h-10 w-10 items-center justify-center rounded-full',
+                  transferMode === 'quantity' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                )}>
+                  <Hash className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={cn(
+                    'text-sm font-medium',
+                    transferMode === 'quantity' ? 'text-primary' : 'text-foreground'
+                  )}>
+                    {t('transfers.byQuantity')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('transfers.byQuantityDescription')}
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <FormField
+            label={transferMode === 'packs' ? t('transfers.numberOfPacks') : t('transfers.exactQuantity')}
+            required
+          >
+            <Input
+              type="number"
+              value={inputValue || ''}
+              onChange={(e) => setInputValue(parseInt(e.target.value) || 0)}
+              min={1}
+              max={maxInput}
+              placeholder="0"
+            />
+          </FormField>
+
+          {inputValue > 0 && (
+            <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+              {transferMode === 'packs' ? (
+                <>
+                  {t('transfers.willTransferPacks')
+                    .replace('{packs}', String(inputValue))
+                    .replace('{units}', String(quantityNeeded))}
+                </>
+              ) : (
+                <>
+                  {t('transfers.willTransferUnits').replace('{units}', String(inputValue))}
+                </>
+              )}
             </div>
           )}
 
@@ -206,10 +283,11 @@ export function TransferForm() {
         </CardContent>
       </Card>
 
-      {selectedItemId && quantity > 0 && (
+      {selectedItemId && quantityNeeded > 0 && (
         <FefoSuggestionList
           itemId={selectedItemId}
-          quantityNeeded={quantity}
+          quantityNeeded={transferMode === 'packs' ? inputValue : quantityNeeded}
+          transferMode={transferMode}
           selectedBatchId={selectedBatchId}
           onSelectBatch={(batchId) => {
             setSelectedBatchId(batchId);
@@ -219,9 +297,9 @@ export function TransferForm() {
 
       <div className="flex gap-3">
         <Button
-          type="submit"
+          onClick={onSubmit}
           isLoading={isCreating}
-          disabled={!selectedBatchId || quantity <= 0}
+          disabled={!selectedBatchId || inputValue <= 0}
         >
           {t('transfers.confirmTransfer')}
         </Button>
@@ -234,6 +312,6 @@ export function TransferForm() {
           {t('common.cancel')}
         </Button>
       </div>
-    </form>
+    </div>
   );
 }

@@ -53,7 +53,8 @@ export function GoodsReceiptForm() {
     itemId: z.string().min(1, t('goodsReceipts.itemRequired')),
     batchNo: z.string().min(1, t('goodsReceipts.batchNumberRequired')),
     expiryDate: z.string().min(1, t('goodsReceipts.expiryDateRequired')),
-    quantityReceived: z.number().int().positive(t('goodsReceipts.positiveInteger')),
+    numberOfPacks: z.number().int().positive(t('goodsReceipts.positiveInteger')),
+    packSize: z.number().int().positive(t('goodsReceipts.positiveInteger')),
     unitCost: z.number().positive(t('goodsReceipts.positiveNumber')),
     markupPercentage: z.number().optional(),
     sellingPrice: z.number().optional(),
@@ -128,7 +129,7 @@ export function GoodsReceiptForm() {
       paymentDueDateType: 'one_month',
       paymentDueDate: undefined,
       items: [
-        { itemId: '', batchNo: '', expiryDate: '', quantityReceived: 1, unitCost: 0 },
+        { itemId: '', batchNo: '', expiryDate: '', numberOfPacks: 1, packSize: 1, unitCost: 0 },
       ],
     },
   });
@@ -141,10 +142,11 @@ export function GoodsReceiptForm() {
   // eslint-disable-next-line react-hooks/incompatible-library
   const watchedItems = watch('items');
 
-  const lineTotal = (qty: number, cost: number) => (qty || 0) * (cost || 0);
+  const lineTotal = (numberOfPacks: number, packSize: number, unitCost: number) =>
+    (numberOfPacks || 0) * (packSize || 0) * (unitCost || 0);
 
   const grandTotal = watchedItems.reduce(
-    (sum, item) => sum + lineTotal(item.quantityReceived, item.unitCost),
+    (sum, item) => sum + lineTotal(item.numberOfPacks, item.packSize, item.unitCost),
     0
   );
 
@@ -203,7 +205,7 @@ export function GoodsReceiptForm() {
       const apiError = err as { data?: { message?: string; errors?: Record<string, string[]> } };
       if (apiError.data?.errors) {
         Object.entries(apiError.data.errors).forEach(([field, messages]) => {
-            setError(field as 'supplierId' | 'receiptDate' | 'items' | `items.${number}` | `items.${number}.itemId` | `items.${number}.batchNo` | `items.${number}.expiryDate` | `items.${number}.quantityReceived` | `items.${number}.unitCost` | `items.${number}.markupPercentage` | `items.${number}.sellingPrice`, {
+            setError(field as 'supplierId' | 'receiptDate' | 'items' | `items.${number}` | `items.${number}.itemId` | `items.${number}.batchNo` | `items.${number}.expiryDate` | `items.${number}.numberOfPacks` | `items.${number}.packSize` | `items.${number}.unitCost` | `items.${number}.markupPercentage` | `items.${number}.sellingPrice`, {
             type: 'server',
             message: messages[0],
           });
@@ -396,7 +398,8 @@ export function GoodsReceiptForm() {
                   itemId: "",
                   batchNo: "",
                   expiryDate: "",
-                  quantityReceived: 1,
+                  numberOfPacks: 1,
+                  packSize: 1,
                   unitCost: 0,
                 })
               }

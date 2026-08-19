@@ -28,7 +28,8 @@ interface BatchLineItemRowFormValues {
     itemId: string;
     batchNo: string;
     expiryDate: string;
-    quantityReceived: number;
+    numberOfPacks: number;
+    packSize: number;
     unitCost: number;
     markupPercentage?: number;
     sellingPrice?: number;
@@ -51,7 +52,8 @@ interface BatchLineItemRowProps {
     itemId?: { message?: string };
     batchNo?: { message?: string };
     expiryDate?: { message?: string };
-    quantityReceived?: { message?: string };
+    numberOfPacks?: { message?: string };
+    packSize?: { message?: string };
     unitCost?: { message?: string };
     markupPercentage?: { message?: string };
     sellingPrice?: { message?: string };
@@ -80,9 +82,13 @@ export function BatchLineItemRow({
   const [createItem, { isLoading: isCreatingItem }] = useCreateItemMutation();
 
   const unitCost = watch(`items.${index}.unitCost`) || 0;
+  const numberOfPacks = watch(`items.${index}.numberOfPacks`) || 0;
+  const packSize = watch(`items.${index}.packSize`) || 1;
   const markupPercentage = watch(`items.${index}.markupPercentage`);
   const sellingPrice = watch(`items.${index}.sellingPrice`);
 
+  const totalUnits = numberOfPacks * packSize;
+  const totalCost = totalUnits * unitCost;
   const calculatedSellingPrice = markupPercentage
     ? unitCost * (1 + markupPercentage / 100)
     : sellingPrice || 0;
@@ -125,7 +131,8 @@ export function BatchLineItemRow({
   });
 
   const lineItemName = `items.${index}` as const;
-  const lineItemQty = `items.${index}.quantityReceived` as const;
+  const lineItemPacks = `items.${index}.numberOfPacks` as const;
+  const lineItemPackSize = `items.${index}.packSize` as const;
   const lineItemCost = `items.${index}.unitCost` as const;
 
   const getTomorrowDate = () => {
@@ -231,19 +238,32 @@ export function BatchLineItemRow({
         </FormField>
 
         <FormField
-          label={t('goodsReceipts.quantity')}
+          label={t('goodsReceipts.numberOfPacks')}
           required
-          error={errors?.quantityReceived?.message}
+          error={errors?.numberOfPacks?.message}
         >
           <Input
             type="number"
-            {...register(lineItemQty, { valueAsNumber: true })}
+            {...register(lineItemPacks, { valueAsNumber: true })}
             min={1}
             placeholder="0"
           />
         </FormField>
 
-        <FormField label={t('goodsReceipts.unitCost')} required error={errors?.unitCost?.message}>
+        <FormField
+          label={t('goodsReceipts.packSize')}
+          required
+          error={errors?.packSize?.message}
+        >
+          <Input
+            type="number"
+            {...register(lineItemPackSize, { valueAsNumber: true })}
+            min={1}
+            placeholder="1"
+          />
+        </FormField>
+
+        <FormField label={t('goodsReceipts.unitCostPerUnit')} required error={errors?.unitCost?.message}>
           <Input
             type="number"
             {...register(lineItemCost, { valueAsNumber: true })}
@@ -301,7 +321,7 @@ export function BatchLineItemRow({
               <div className="text-sm text-muted-foreground">
                 {unitCost > 0 && markupPercentage ? (
                   <span>
-                    Unit Cost: <span className="font-medium text-foreground">ETB {unitCost.toFixed(2)}</span>
+                    Cost/Unit: <span className="font-medium text-foreground">ETB {unitCost.toFixed(2)}</span>
                     {" × "}{markupPercentage}% ={" "}
                     <span className="font-medium text-primary">ETB {calculatedSellingPrice.toFixed(2)}</span>
                   </span>
@@ -312,6 +332,27 @@ export function BatchLineItemRow({
             )}
           </div>
         </FormField>
+
+        {/* Auto-calculated summary */}
+        <div className="sm:col-span-2 rounded-md bg-muted/50 p-3">
+          <p className="text-xs font-medium text-muted-foreground mb-2">{t('goodsReceipts.autoCalculated')}</p>
+          <div className="flex flex-wrap gap-4 text-sm">
+            <span>
+              {t('goodsReceipts.totalUnits')}: <span className="font-medium text-foreground">{totalUnits}</span>
+            </span>
+            <span>
+              {t('goodsReceipts.totalCost')}: <span className="font-medium text-foreground">ETB {totalCost.toFixed(2)}</span>
+            </span>
+            <span>
+              {t('goodsReceipts.costPerUnit')}: <span className="font-medium text-foreground">ETB {unitCost.toFixed(2)}</span>
+            </span>
+            {calculatedSellingPrice > 0 && (
+              <span>
+                {t('goodsReceipts.sellingPerUnit')}: <span className="font-medium text-primary">ETB {calculatedSellingPrice.toFixed(2)}</span>
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       <Dialog open={newItemOpen} onOpenChange={setNewItemOpen}>
