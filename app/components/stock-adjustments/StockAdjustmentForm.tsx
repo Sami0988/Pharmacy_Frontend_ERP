@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CheckCircle, Warehouse, Truck } from 'lucide-react';
+import { CheckCircle, Warehouse, Truck, Package, Pill } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
@@ -37,6 +37,7 @@ export function StockAdjustmentForm() {
   const [selectedBatch, setSelectedBatch] = useState<BatchSearchResult | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState('');
   const [batchDetails, setBatchDetails] = useState<BatchWithStock | null>(null);
+  const [adjustmentUnit, setAdjustmentUnit] = useState<'single' | 'pack'>('single');
 
   const [searchBatches, { isLoading: isSearchingBatches }] = useLazySearchBatchesQuery();
   const [getBatchById] = useLazyGetBatchByIdQuery();
@@ -78,6 +79,12 @@ export function StockAdjustmentForm() {
     if (!batchDetails || !selectedLocationId) return null;
     const found = batchDetails.quantitiesByLocation?.find((ql) => ql.locationId === selectedLocationId);
     return found ? Number(found.quantity) : null;
+  }, [batchDetails, selectedLocationId]);
+
+  const selectedLocationPackSize = useMemo(() => {
+    if (!batchDetails || !selectedLocationId) return 1;
+    const found = batchDetails.quantitiesByLocation?.find((ql) => ql.locationId === selectedLocationId);
+    return found?.packSize || 1;
   }, [batchDetails, selectedLocationId]);
 
   const adjustmentSchema = z.object({
@@ -151,16 +158,25 @@ export function StockAdjustmentForm() {
 
   const delta = useMemo(() => {
     if (currentQuantity === null || watchedNewQuantity === undefined) return null;
-    return watchedNewQuantity - currentQuantity;
-  }, [currentQuantity, watchedNewQuantity]);
+    const newQtyInUnits = adjustmentUnit === 'pack' 
+      ? watchedNewQuantity * selectedLocationPackSize 
+      : watchedNewQuantity;
+    return newQtyInUnits - currentQuantity;
+  }, [currentQuantity, watchedNewQuantity, adjustmentUnit, selectedLocationPackSize]);
 
   const onSubmit = async (data: AdjustmentFormData) => {
     try {
+      // Convert pack quantity to units if needed
+      const newQuantityInUnits = adjustmentUnit === 'pack' 
+        ? data.newQuantity * selectedLocationPackSize 
+        : data.newQuantity;
+
       const result = await createStockAdjustment({
         batchId: data.batchId,
         locationId: data.locationId,
-        newQuantity: data.newQuantity,
+        newQuantity: newQuantityInUnits,
         reason: data.reason,
+        adjustmentUnit,
       }).unwrap();
 
       setAdjustmentResult({
@@ -307,23 +323,71 @@ export function StockAdjustmentForm() {
             <div className="rounded-md bg-background p-4">
               <p className="text-sm text-muted-foreground">
                 {t('stockAdjustments.currentStock')}: <span className="font-medium text-foreground">{currentQuantity}</span>
+                {selectedLocationPackSize > 1 && (
+                  <span className="text-muted-foreground ml-1">({currentQuantity / selectedLocationPackSize} packs × {selectedLocationPackSize})</span>
+                )}
               </p>
             </div>
           )}
 
-          <FormField label={t('stockAdjustments.newQuantityLabel')} required error={errors.newQuantity?.message}>
+          {selectedLocationPackSize > 1 && (
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-foreground">
+                {t('stockAdjustments.adjustmentUnit')}
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAdjustmentUnit('single')}
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors',
+                    adjustmentUnit === 'single'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border text-muted-foreground hover:bg-accent'
+                  )}
+                >
+                  <Pill className="h-4 w-4" />
+                  {t('stockAdjustments.byUnit')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdjustmentUnit('pack')}
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors',
+                    adjustmentUnit === 'pack'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border text-muted-foreground hover:bg-accent'
+                  )}
+                >
+                  <Package className="h-4 w-4" />
+                  {t('stockAdjustments.byPack')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <FormField 
+            label={adjustmentUnit === 'pack' ? t('stockAdjustments.newQuantityInPacks') : t('stockAdjustments.newQuantityLabel')} 
+            required 
+            error={errors.newQuantity?.message}
+          >
             <Input
               type="number"
               {...register('newQuantity', { valueAsNumber: true })}
               min={0}
               placeholder="0"
             />
+            {adjustmentUnit === 'pack' && selectedLocationPackSize > 1 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                = {(watchedNewQuantity || 0) * selectedLocationPackSize} {t('stockAdjustments.units')}
+              </p>
+            )}
           </FormField>
 
           {currentQuantity !== null && delta !== null && (
             <div className={`rounded-md p-3 ${delta >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
               <p className={`text-sm font-medium ${delta >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-                {t('stockAdjustments.adjustmentPreview')}: {currentQuantity} → {watchedNewQuantity ?? 0} (
+                {t('stockAdjustments.adjustmentPreview')}: {currentQuantity} → {adjustmentUnit === 'pack' ? (watchedNewQuantity || 0) * selectedLocationPackSize : (watchedNewQuantity ?? 0)} (
                 <span className={delta >= 0 ? 'text-green-600' : 'text-red-600'}>
                   {delta >= 0 ? '+' : ''}{delta}
                 </span>)
