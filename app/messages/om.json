@@ -586,7 +586,8 @@
     "autoCalculated": "Of taasifame",
     "totalUnits": "Waliigalaa Yunitii",
     "costPerUnit": "Baasii/Yunitii",
-    "sellingPerUnit": "Gatii/Yunitii"
+    "sellingPerUnit": "Gatii/Yunitii",
+    "sellingPerPack": "Gatii/Paakii"
   },
   "notifications": {
     "title": "Beeksisa",

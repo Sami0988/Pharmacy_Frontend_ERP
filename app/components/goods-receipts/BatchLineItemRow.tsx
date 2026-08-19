@@ -92,6 +92,7 @@ export function BatchLineItemRow({
   const calculatedSellingPrice = markupPercentage
     ? unitCost * (1 + markupPercentage / 100)
     : sellingPrice || 0;
+  const calculatedPackPrice = calculatedSellingPrice * packSize;
 
   const handleMarkupSelect = (pct: number) => {
     setCustomPriceMode(false);
@@ -349,6 +350,11 @@ export function BatchLineItemRow({
             {calculatedSellingPrice > 0 && (
               <span>
                 {t('goodsReceipts.sellingPerUnit')}: <span className="font-medium text-primary">ETB {calculatedSellingPrice.toFixed(2)}</span>
+              </span>
+            )}
+            {calculatedSellingPrice > 0 && packSize > 1 && (
+              <span>
+                {t('goodsReceipts.sellingPerPack')}: <span className="font-medium text-primary">ETB {calculatedPackPrice.toFixed(2)}</span>
               </span>
             )}
           </div>
