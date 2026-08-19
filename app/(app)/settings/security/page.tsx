@@ -6,6 +6,7 @@ import { MfaSetupCard } from '@/components/auth/MfaSetupCard';
 import { ActiveSessionsCard } from '@/components/auth/ActiveSessionsCard';
 import { LoginHistoryCard } from '@/components/auth/LoginHistoryCard';
 import { ProfileSettingsCard } from '@/components/auth/ProfileSettingsCard';
+import { ChangePasswordCard } from '@/components/auth/ChangePasswordCard';
 import { useTranslations } from '@/lib/i18n';
 
 export default function SecurityPage() {
@@ -34,6 +35,7 @@ export default function SecurityPage() {
           </TabsList>
 
           <TabsContent value="security" className="space-y-6 mt-6">
+            <ChangePasswordCard />
             <MfaSetupCard />
             <ActiveSessionsCard />
             <LoginHistoryCard />

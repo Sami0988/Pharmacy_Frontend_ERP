@@ -16,6 +16,7 @@ import type {
   UpdateNameRequest,
   UpdateNameResponse,
   UploadImageResponse,
+  ChangePasswordRequest,
   User,
 } from '@/types/api';
 
@@ -149,6 +150,14 @@ export const authApi = createApi({
       }),
       invalidatesTags: ['User'],
     }),
+
+    changePassword: builder.mutation<{ message: string }, ChangePasswordRequest>({
+      query: (data) => ({
+        url: '/auth/change-password',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -169,4 +178,5 @@ export const {
   useUpdateNameMutation,
   useUploadProfileImageMutation,
   useGetMeQuery,
+  useChangePasswordMutation,
 } = authApi;
