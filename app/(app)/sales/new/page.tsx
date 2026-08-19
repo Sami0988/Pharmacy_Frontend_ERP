@@ -21,7 +21,7 @@ export default function NewSalePage() {
   const [lineErrors, setLineErrors] = useState<Record<string, string>>({});
 
   const handleAddItem = useCallback(
-    (item: Item, dispatcherQuantity: number, sellingPrice: number) => {
+    (item: Item, dispatcherQuantity: number, sellingPrice: number, packSize?: number, packPrice?: number) => {
       if (dispatcherQuantity === 0) {
         setSubstituteModalItem(item);
         return;
@@ -45,6 +45,9 @@ export default function NewSalePage() {
             quantity: 1,
             unitPrice: sellingPrice,
             subtotal: sellingPrice,
+            packSize,
+            packPrice,
+            saleUnit: 'single' as const,
           },
         ];
       });
@@ -137,6 +140,22 @@ export default function NewSalePage() {
     setLineErrors({});
   }, []);
 
+  const handleToggleSaleUnit = useCallback((itemId: string) => {
+    setCart((prev) =>
+      prev.map((c) => {
+        if (c.itemId !== itemId) return c;
+        const newSaleUnit = c.saleUnit === 'single' ? 'pack' : 'single';
+        const newUnitPrice = newSaleUnit === 'pack' && c.packPrice ? c.packPrice : c.unitPrice;
+        return {
+          ...c,
+          saleUnit: newSaleUnit,
+          unitPrice: newUnitPrice,
+          subtotal: c.quantity * newUnitPrice,
+        };
+      })
+    );
+  }, []);
+
   const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
 
   const hasRootError = !!lineErrors['root'];
@@ -176,6 +195,7 @@ export default function NewSalePage() {
             onRemove={handleRemove}
             onBatchSelected={handleBatchSelected}
             onChangeBatch={handleChangeBatch}
+            onToggleSaleUnit={handleToggleSaleUnit}
           />
         </div>
 

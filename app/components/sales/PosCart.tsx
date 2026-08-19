@@ -13,6 +13,9 @@ export interface PosCartItem {
   subtotal: number;
   batchId?: string;
   batchNo?: string;
+  packSize?: number;
+  packPrice?: number;
+  saleUnit: 'single' | 'pack';
 }
 
 interface PosCartProps {
@@ -21,6 +24,7 @@ interface PosCartProps {
   onRemove: (itemId: string) => void;
   onBatchSelected: (itemId: string, batchId: string, batchNo: string) => void;
   onChangeBatch: (itemId: string) => void;
+  onToggleSaleUnit: (itemId: string) => void;
 }
 
 export function PosCart({
@@ -29,6 +33,7 @@ export function PosCart({
   onRemove,
   onBatchSelected,
   onChangeBatch,
+  onToggleSaleUnit,
 }: PosCartProps) {
   const { t } = useTranslations();
   const total = items.reduce((sum, item) => sum + item.subtotal, 0);
@@ -60,6 +65,7 @@ export function PosCart({
                 onRemove={onRemove}
                 onBatchSelected={onBatchSelected}
                 onChangeBatch={onChangeBatch}
+                onToggleSaleUnit={onToggleSaleUnit}
               />
             ))}
           </div>

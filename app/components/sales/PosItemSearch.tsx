@@ -9,7 +9,7 @@ import type { Item } from '@/types/api';
 import { useTranslations } from '@/lib/i18n';
 
 interface PosItemSearchProps {
-  onAddItem: (item: Item, dispatcherQuantity: number, sellingPrice: number) => void;
+  onAddItem: (item: Item, dispatcherQuantity: number, sellingPrice: number, packSize?: number, packPrice?: number) => void;
 }
 
 export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
@@ -37,10 +37,20 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
     (stockData?.data || []).map((s) => [s.itemId, s.sellingPrice ?? 0])
   );
 
+  const packSizeMap = new Map(
+    (stockData?.data || []).map((s) => [s.itemId, s.packSize])
+  );
+
+  const packPriceMap = new Map(
+    (stockData?.data || []).map((s) => [s.itemId, s.packPrice])
+  );
+
   const handleSelect = (item: Item) => {
     const dispatcherQty = stockMap.get(item.id) || 0;
     const sellingPrice = sellingPriceMap.get(item.id) || 0;
-    onAddItem(item, dispatcherQty, sellingPrice);
+    const packSize = packSizeMap.get(item.id);
+    const packPrice = packPriceMap.get(item.id);
+    onAddItem(item, dispatcherQty, sellingPrice, packSize, packPrice);
     setSearch('');
     setIsOpen(false);
     inputRef.current?.focus();
@@ -75,6 +85,8 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
             {items.map((item) => {
               const dispatcherQty = stockMap.get(item.id) || 0;
               const outOfStock = dispatcherQty === 0;
+              const packSize = packSizeMap.get(item.id);
+              const packPrice = packPriceMap.get(item.id);
 
               return (
                 <button
@@ -93,6 +105,11 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
                     <p className="font-medium text-foreground">{item.name}</p>
                     {item.genericName && (
                       <p className="text-xs text-muted-foreground">{item.genericName}</p>
+                    )}
+                    {packSize && packSize > 1 && (
+                      <p className="text-xs text-muted-foreground">
+                        Pack: {packSize} units · {packPrice?.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}/pack
+                      </p>
                     )}
                   </div>
                   <div className="text-right">

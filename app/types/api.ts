@@ -359,6 +359,7 @@ export interface StockByLocationRow {
   totalPacks?: number;
   totalValueAtCost?: number;
   sellingPrice?: number;
+  packPrice?: number;
 }
 
 export interface FefoSuggestion {
@@ -435,6 +436,7 @@ export interface CreateSaleItemDto {
   itemId: string;
   quantity: number;
   batchId?: string;
+  saleUnit?: 'single' | 'pack';
 }
 
 export interface CreateSaleDto {

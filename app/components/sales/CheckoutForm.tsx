@@ -50,6 +50,7 @@ export function CheckoutForm({ items, total, onClearCart, onLineError }: Checkou
           itemId: item.itemId,
           quantity: item.quantity,
           batchId: item.batchId,
+          saleUnit: item.saleUnit,
         })),
       }).unwrap();
 

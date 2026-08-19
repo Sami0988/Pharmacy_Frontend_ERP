@@ -1,10 +1,11 @@
 'use client';
 
 import { useMemo, useEffect } from 'react';
-import { X, RefreshCw } from 'lucide-react';
+import { X, RefreshCw, Package, Pill } from 'lucide-react';
 import { useGetItemBatchesQuery } from '@/store/api/reports-api-slice';
 import type { PosCartItem } from './PosCart';
 import { useTranslations } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 
 interface PosCartLineProps {
   item: PosCartItem;
@@ -12,6 +13,7 @@ interface PosCartLineProps {
   onRemove: (itemId: string) => void;
   onBatchSelected: (itemId: string, batchId: string, batchNo: string) => void;
   onChangeBatch: (itemId: string) => void;
+  onToggleSaleUnit: (itemId: string) => void;
 }
 
 export function PosCartLine({
@@ -20,6 +22,7 @@ export function PosCartLine({
   onRemove,
   onBatchSelected,
   onChangeBatch,
+  onToggleSaleUnit,
 }: PosCartLineProps) {
   const { t } = useTranslations();
   const { data: batches, refetch } = useGetItemBatchesQuery(
@@ -58,6 +61,11 @@ export function PosCartLine({
             </p>
           ) : (
             <p className="text-xs text-muted-foreground">{t('sales.loadingBatch')}</p>
+          )}
+          {item.packSize && item.packSize > 1 && (
+            <p className="text-xs text-muted-foreground">
+              {item.saleUnit === 'pack' ? `${item.packPrice?.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}/pack (${item.packSize} units)` : `${item.unitPrice.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}/unit`}
+            </p>
           )}
         </div>
 
@@ -105,6 +113,22 @@ export function PosCartLine({
         </div>
 
         <div className="flex items-center gap-1">
+          {item.packSize && item.packSize > 1 && (
+            <button
+              type="button"
+              onClick={() => onToggleSaleUnit(item.itemId)}
+              className={cn(
+                'flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors',
+                item.saleUnit === 'pack'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-accent'
+              )}
+              title={item.saleUnit === 'pack' ? 'Selling by pack' : 'Selling by unit'}
+            >
+              {item.saleUnit === 'pack' ? <Package className="h-3 w-3" /> : <Pill className="h-3 w-3" />}
+              {item.saleUnit === 'pack' ? 'Pack' : 'Unit'}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => refetch()}
