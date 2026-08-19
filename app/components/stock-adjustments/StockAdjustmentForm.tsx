@@ -284,7 +284,7 @@ export function StockAdjustmentForm() {
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {loc.quantity} {t('stockAdjustments.inStock')}
-                          {loc.numberOfPacks != null && loc.numberOfPacks > 0 && loc.packSize != null && loc.packSize > 1 && (
+                          {loc.numberOfPacks != null && loc.numberOfPacks > 0 && loc.packSize != null && (
                             <span className="ml-1">({loc.numberOfPacks} packs × {loc.packSize})</span>
                           )}
                         </p>
