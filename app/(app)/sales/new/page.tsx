@@ -47,6 +47,7 @@ export default function NewSalePage() {
             subtotal: sellingPrice,
             packSize,
             packPrice,
+            sellingPrice,
             saleUnit: 'single' as const,
           },
         ];
@@ -145,13 +146,29 @@ export default function NewSalePage() {
       prev.map((c) => {
         if (c.itemId !== itemId) return c;
         const newSaleUnit = c.saleUnit === 'single' ? 'pack' : 'single';
-        const newUnitPrice = newSaleUnit === 'pack' && c.packPrice ? c.packPrice : c.unitPrice;
-        return {
-          ...c,
-          saleUnit: newSaleUnit,
-          unitPrice: newUnitPrice,
-          subtotal: c.quantity * newUnitPrice,
-        };
+        
+        if (newSaleUnit === 'pack' && c.packPrice && c.packSize) {
+          // Switching to pack: convert units to packs, use packPrice
+          const packQuantity = Math.max(1, Math.ceil(c.quantity / c.packSize));
+          return {
+            ...c,
+            saleUnit: 'pack',
+            unitPrice: c.packPrice,
+            quantity: packQuantity,
+            subtotal: packQuantity * c.packPrice,
+          };
+        } else {
+          // Switching to single: convert packs to units, use original sellingPrice
+          const unitQuantity = c.quantity * (c.packSize || 1);
+          const originalPrice = c.sellingPrice || c.unitPrice;
+          return {
+            ...c,
+            saleUnit: 'single',
+            unitPrice: originalPrice,
+            quantity: unitQuantity,
+            subtotal: unitQuantity * originalPrice,
+          };
+        }
       })
     );
   }, []);

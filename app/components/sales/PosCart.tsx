@@ -15,6 +15,7 @@ export interface PosCartItem {
   batchNo?: string;
   packSize?: number;
   packPrice?: number;
+  sellingPrice?: number;
   saleUnit: 'single' | 'pack';
 }
 

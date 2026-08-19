@@ -64,7 +64,10 @@ export function PosCartLine({
           )}
           {item.packSize && item.packSize > 1 && (
             <p className="text-xs text-muted-foreground">
-              {item.saleUnit === 'pack' ? `${item.packPrice?.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}/pack (${item.packSize} units)` : `${item.unitPrice.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}/unit`}
+              {item.saleUnit === 'pack' 
+                ? `${item.quantity} pack × ${item.packPrice?.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })} = ${item.subtotal.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}`
+                : `${item.quantity} unit × ${item.unitPrice.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })} = ${item.subtotal.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}`
+              }
             </p>
           )}
         </div>
