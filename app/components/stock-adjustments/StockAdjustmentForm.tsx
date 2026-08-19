@@ -69,6 +69,8 @@ export function StockAdjustmentForm() {
       id: ql.locationId,
       name: index === 0 ? 'Store' : 'Dispencer',
       quantity: Number(ql.quantity),
+      packSize: ql.packSize,
+      numberOfPacks: ql.numberOfPacks,
     }));
   }, [batchDetails]);
 
@@ -282,6 +284,9 @@ export function StockAdjustmentForm() {
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {loc.quantity} {t('stockAdjustments.inStock')}
+                          {loc.numberOfPacks != null && loc.numberOfPacks > 0 && loc.packSize != null && loc.packSize > 1 && (
+                            <span className="ml-1">({loc.numberOfPacks} packs × {loc.packSize})</span>
+                          )}
                         </p>
                       </div>
                     </button>

@@ -359,7 +359,7 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <FormField label="Number of Packs" error={batchErrors[`${batch.batchId}.numberOfPacks`]}>
+                  <FormField label="Quantity Ordered" error={batchErrors[`${batch.batchId}.numberOfPacks`]}>
                     <Input
                       type="number"
                       value={batch.numberOfPacks}
@@ -368,7 +368,7 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
                     />
                   </FormField>
 
-                  <FormField label="Pack Size">
+                  <FormField label="Units per Pack">
                     <Input
                       type="number"
                       value={batch.packSize}
