@@ -33,6 +33,7 @@ interface BatchLineItemRowFormValues {
     unitCost: number;
     markupPercentage?: number;
     sellingPrice?: number;
+    packPrice?: number;
   }>;
   taxPaid: boolean;
   paymentMethod: 'cash' | 'credit' | 'mobile_bank';
@@ -57,6 +58,7 @@ interface BatchLineItemRowProps {
     unitCost?: { message?: string };
     markupPercentage?: { message?: string };
     sellingPrice?: { message?: string };
+    packPrice?: { message?: string };
   };
 }
 
@@ -333,6 +335,24 @@ export function BatchLineItemRow({
             )}
           </div>
         </FormField>
+
+        {packSize > 1 && (
+          <FormField
+            label="Pack Price"
+            error={errors?.packPrice?.message}
+          >
+            <Input
+              type="number"
+              {...register(`items.${index}.packPrice`, { valueAsNumber: true })}
+              min={0}
+              step="0.01"
+              placeholder={`Auto: ${(calculatedSellingPrice * packSize).toFixed(2)}`}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Auto: {calculatedSellingPrice.toFixed(2)} × {packSize} = ETB {calculatedPackPrice.toFixed(2)}
+            </p>
+          </FormField>
+        )}
 
         {/* Auto-calculated summary */}
         <div className="sm:col-span-2 rounded-md bg-muted/50 p-3">

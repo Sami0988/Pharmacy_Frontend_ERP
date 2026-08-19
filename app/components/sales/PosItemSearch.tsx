@@ -45,11 +45,15 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
     (stockData?.data || []).map((s) => [s.itemId, s.packPrice])
   );
 
+  const dispatcherPacksMap = new Map(
+    (stockData?.data || []).map((s) => [s.itemId, s.dispatcherPacks ?? 0])
+  );
+
   const handleSelect = (item: Item) => {
     const dispatcherQty = stockMap.get(item.id) || 0;
     const sellingPrice = sellingPriceMap.get(item.id) || 0;
     const packSize = packSizeMap.get(item.id);
-    const packPrice = packPriceMap.get(item.id);
+    const packPrice = packPriceMap.get(item.id) || (packSize && packSize > 1 ? sellingPrice * packSize : undefined);
     onAddItem(item, dispatcherQty, sellingPrice, packSize, packPrice);
     setSearch('');
     setIsOpen(false);
@@ -87,6 +91,7 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
               const outOfStock = dispatcherQty === 0;
               const packSize = packSizeMap.get(item.id);
               const packPrice = packPriceMap.get(item.id);
+              const totalPacks = dispatcherPacksMap.get(item.id);
 
               return (
                 <button
@@ -108,7 +113,7 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
                     )}
                     {packSize && packSize > 1 && (
                       <p className="text-xs text-muted-foreground">
-                        Pack: {packSize} units {packPrice ? `· ${packPrice.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}/pack` : ''}
+                        Pack: {packSize} units · {totalPacks ?? 0} packs {packPrice ? `· ${packPrice.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}/pack` : ''}
                       </p>
                     )}
                   </div>

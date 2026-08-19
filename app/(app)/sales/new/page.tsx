@@ -147,18 +147,18 @@ export default function NewSalePage() {
         if (c.itemId !== itemId) return c;
         const newSaleUnit = c.saleUnit === 'single' ? 'pack' : 'single';
         
-        if (newSaleUnit === 'pack' && c.packPrice && c.packSize) {
-          // Switching to pack: convert units to packs, use packPrice
+        if (newSaleUnit === 'pack' && c.packSize) {
+          const effectivePackPrice = c.packPrice || ((c.sellingPrice || 0) * (c.packSize || 1));
           const packQuantity = Math.max(1, Math.ceil(c.quantity / c.packSize));
           return {
             ...c,
             saleUnit: 'pack',
-            unitPrice: c.packPrice,
+            unitPrice: effectivePackPrice,
             quantity: packQuantity,
-            subtotal: packQuantity * c.packPrice,
+            subtotal: packQuantity * effectivePackPrice,
+            packPrice: effectivePackPrice,
           };
         } else {
-          // Switching to single: convert packs to units, use original sellingPrice
           const unitQuantity = c.quantity * (c.packSize || 1);
           const originalPrice = c.sellingPrice || c.unitPrice;
           return {

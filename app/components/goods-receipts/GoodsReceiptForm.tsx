@@ -58,6 +58,7 @@ export function GoodsReceiptForm() {
     unitCost: z.number().positive(t('goodsReceipts.positiveNumber')),
     markupPercentage: z.number().optional(),
     sellingPrice: z.number().optional(),
+    packPrice: z.number().optional(),
   });
 
   const grnSchema = z
@@ -183,10 +184,16 @@ export function GoodsReceiptForm() {
     });
     if (hasSellingPriceError) return;
 
+    const itemsWithPackPrice = data.items.map((item) => {
+      const effectiveSellingPrice = item.sellingPrice || 0;
+      const packPrice = item.packPrice || (item.packSize > 1 ? effectiveSellingPrice * item.packSize : undefined);
+      return { ...item, packPrice };
+    });
+
     const formData = new FormData();
     formData.append('supplierId', data.supplierId);
     formData.append('receiptDate', data.receiptDate);
-    formData.append('items', JSON.stringify(data.items));
+    formData.append('items', JSON.stringify(itemsWithPackPrice));
     formData.append('taxPaid', String(data.taxPaid ?? false));
     formData.append('paymentMethod', data.paymentMethod ?? 'cash');
     formData.append('paymentDueDateType', data.paymentDueDateType);

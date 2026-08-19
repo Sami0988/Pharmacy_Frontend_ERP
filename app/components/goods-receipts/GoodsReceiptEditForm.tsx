@@ -43,6 +43,7 @@ interface BatchEditData {
   packSize: number;
   unitCost: number;
   sellingPrice: number;
+  packPrice?: number;
   quantityReceived: number;
   totalSold: number;
   totalTransferred: number;
@@ -120,6 +121,7 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
       packSize: batch.packSize || 1,
       unitCost: batch.unitCost,
       sellingPrice: Number(batch.sellingPrice) || 0,
+      packPrice: Number(batch.packPrice) || undefined,
       quantityReceived: batch.quantityReceived,
       totalSold: 0,
       totalTransferred: 0,
@@ -163,6 +165,7 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
       packSize: b.packSize,
       unitCost: b.unitCost,
       sellingPrice: b.sellingPrice,
+      packPrice: b.packPrice || (b.packSize > 1 ? b.sellingPrice * b.packSize : undefined),
     }));
     formData.append('items', JSON.stringify(itemsPayload));
 
@@ -396,6 +399,19 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
                       step="0.01"
                     />
                   </FormField>
+
+                  {batch.packSize > 1 && (
+                    <FormField label="Pack Price" error={batchErrors[`${batch.batchId}.packPrice`]}>
+                      <Input
+                        type="number"
+                        value={batch.packPrice || ''}
+                        onChange={(e) => updateBatchEdit(batch.batchId, 'packPrice', parseFloat(e.target.value) || 0)}
+                        min={0}
+                        step="0.01"
+                        placeholder={`Auto: ${(batch.sellingPrice * batch.packSize).toFixed(2)}`}
+                      />
+                    </FormField>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

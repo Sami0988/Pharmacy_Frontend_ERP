@@ -183,6 +183,7 @@ export interface Batch {
   packSize?: number;
   unitCost: number;
   sellingPrice?: number;
+  packPrice?: number;
   markupPercentage?: number;
   qrCodeUrl?: string;
   createdAt: string;
@@ -233,6 +234,7 @@ export interface CreateGoodsReceiptItemDto {
   unitCost: number;
   markupPercentage?: number;
   sellingPrice?: number;
+  packPrice?: number;
 }
 
 export interface UpdateGoodsReceiptItemDto {
@@ -243,6 +245,7 @@ export interface UpdateGoodsReceiptItemDto {
   packSize?: number;
   unitCost?: number;
   sellingPrice?: number;
+  packPrice?: number;
 }
 
 export interface UpdateGoodsReceiptDto {
