@@ -108,7 +108,7 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
                     )}
                     {packSize && packSize > 1 && (
                       <p className="text-xs text-muted-foreground">
-                        Pack: {packSize} units · {packPrice?.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}/pack
+                        Pack: {packSize} units {packPrice ? `· ${packPrice.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}/pack` : ''}
                       </p>
                     )}
                   </div>

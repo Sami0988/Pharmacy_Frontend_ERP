@@ -62,7 +62,7 @@ export function PosCartLine({
           ) : (
             <p className="text-xs text-muted-foreground">{t('sales.loadingBatch')}</p>
           )}
-          {item.packSize && item.packSize > 1 && (
+          {item.packSize != null && item.packSize > 1 && (
             <p className="text-xs text-muted-foreground">
               {item.saleUnit === 'pack' 
                 ? `${item.quantity} pack × ${item.packPrice?.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })} = ${item.subtotal.toLocaleString('en-US', { style: 'currency', currency: 'ETB' })}`
@@ -116,7 +116,7 @@ export function PosCartLine({
         </div>
 
         <div className="flex items-center gap-1">
-          {item.packSize && item.packSize > 1 && (
+          {item.packSize != null && item.packSize > 1 && (
             <button
               type="button"
               onClick={() => onToggleSaleUnit(item.itemId)}
