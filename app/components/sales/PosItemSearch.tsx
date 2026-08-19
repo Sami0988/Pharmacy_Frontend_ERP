@@ -27,7 +27,7 @@ export function PosItemSearch({ onAddItem }: PosItemSearchProps) {
     { skip: search.length < 1 }
   ).data?.data ?? [];
 
-  const { data: stockData } = useGetStockByLocationQuery({});
+  const { data: stockData } = useGetStockByLocationQuery({ limit: 1000 });
 
   const stockMap = new Map(
     (stockData?.data || []).map((s) => [s.itemId, s.dispatcherQuantity])
