@@ -35,7 +35,7 @@ export function StockByLocationTable({ data, isLoading, isFetching, pagination }
       render: (row) => (
         <div>
           <span className="font-medium">{row.storeQuantity}</span>
-          {row.storePacks != null && row.storePacks > 0 && row.packSize != null && row.packSize > 1 && (
+          {row.storePacks != null && row.storePacks > 0 && (
             <span className="text-muted-foreground text-xs block">
               ({row.storePacks} packs × {row.packSize})
             </span>
@@ -49,7 +49,7 @@ export function StockByLocationTable({ data, isLoading, isFetching, pagination }
       render: (row) => (
         <div>
           <span className="font-medium">{row.dispatcherQuantity}</span>
-          {row.dispatcherPacks != null && row.dispatcherPacks > 0 && row.packSize != null && row.packSize > 1 && (
+          {row.dispatcherPacks != null && row.dispatcherPacks > 0 && (
             <span className="text-muted-foreground text-xs block">
               ({row.dispatcherPacks} packs × {row.packSize})
             </span>
@@ -63,7 +63,7 @@ export function StockByLocationTable({ data, isLoading, isFetching, pagination }
       render: (row) => (
         <div>
           <span className="font-semibold">{row.totalQuantity}</span>
-          {row.totalPacks != null && row.totalPacks > 0 && row.packSize != null && row.packSize > 1 && (
+          {row.totalPacks != null && row.totalPacks > 0 && (
             <span className="text-muted-foreground text-xs block">
               ({row.totalPacks} packs × {row.packSize})
             </span>
