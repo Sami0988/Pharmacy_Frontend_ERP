@@ -19,6 +19,8 @@ export default function TraceabilityPage() {
   const doSearch = useCallback((value: string) => {
     const trimmed = value.trim();
     if (!trimmed) return;
+    // Reject obviously invalid search values (JSON, URLs, etc.)
+    if (trimmed.startsWith('[') || trimmed.startsWith('{') || trimmed.length > 100) return;
     setHasSearched(true);
     trigger(trimmed);
   }, [trigger]);
@@ -88,7 +90,7 @@ export default function TraceabilityPage() {
       {noResults && (
         <div className="text-center py-8">
           <p className="text-sm text-muted-foreground">
-            {t('traceability.noResults')} &ldquo;{searchValue.trim().toLowerCase()}&rdquo;
+            {t('traceability.noResults')} &ldquo;{searchValue.trim().toLowerCase().slice(0, 50)}{searchValue.trim().length > 50 ? '...' : ''}&rdquo;
           </p>
         </div>
       )}
