@@ -143,11 +143,11 @@ export function GoodsReceiptForm() {
   // eslint-disable-next-line react-hooks/incompatible-library
   const watchedItems = watch('items');
 
-  const lineTotal = (numberOfPacks: number, packSize: number, unitCost: number) =>
-    (numberOfPacks || 0) * (packSize || 0) * (unitCost || 0);
+  const lineTotal = (numberOfPacks: number, unitCost: number) =>
+    (numberOfPacks || 0) * (unitCost || 0);
 
   const grandTotal = watchedItems.reduce(
-    (sum, item) => sum + lineTotal(item.numberOfPacks, item.packSize, item.unitCost),
+    (sum, item) => sum + lineTotal(item.numberOfPacks, item.unitCost),
     0
   );
 
@@ -187,7 +187,8 @@ export function GoodsReceiptForm() {
     const itemsWithPackPrice = data.items.map((item) => {
       const effectiveSellingPrice = item.sellingPrice || 0;
       const packPrice = item.packPrice || (item.packSize > 1 ? effectiveSellingPrice * item.packSize : undefined);
-      return { ...item, packPrice };
+      const convertedUnitCost = item.packSize > 0 ? item.unitCost / item.packSize : item.unitCost;
+      return { ...item, unitCost: convertedUnitCost, packPrice };
     });
 
     const formData = new FormData();

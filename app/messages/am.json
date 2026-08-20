@@ -585,6 +585,7 @@
     "autoCalculated": "በአቪያቶ የተחשב",
     "totalUnits": "ጠቅላላ ክፍሎች",
     "costPerUnit": "ዋጋ/ክፍል",
+    "costPerPack": "ዋጋ/Pack",
     "sellingPerUnit": "የመሸጫ/ክፍል",
     "sellingPerPack": "የመሸጫ/Pack"
   },

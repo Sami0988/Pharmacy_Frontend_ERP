@@ -83,16 +83,17 @@ export function BatchLineItemRow({
     [];
   const [createItem, { isLoading: isCreatingItem }] = useCreateItemMutation();
 
-  const unitCost = watch(`items.${index}.unitCost`) || 0;
+  const packCost = watch(`items.${index}.unitCost`) || 0;
   const numberOfPacks = watch(`items.${index}.numberOfPacks`) || 0;
   const packSize = watch(`items.${index}.packSize`) || 1;
   const markupPercentage = watch(`items.${index}.markupPercentage`);
   const sellingPrice = watch(`items.${index}.sellingPrice`);
 
   const totalUnits = numberOfPacks * packSize;
-  const totalCost = totalUnits * unitCost;
+  const totalCost = numberOfPacks * packCost;
+  const unitCostFromPack = packSize > 0 ? packCost / packSize : 0;
   const calculatedSellingPrice = markupPercentage
-    ? unitCost * (1 + markupPercentage / 100)
+    ? unitCostFromPack * (1 + markupPercentage / 100)
     : sellingPrice || 0;
   const calculatedPackPrice = calculatedSellingPrice * packSize;
 
@@ -266,7 +267,7 @@ export function BatchLineItemRow({
           />
         </FormField>
 
-        <FormField label={t('goodsReceipts.unitCostPerUnit')} required error={errors?.unitCost?.message}>
+        <FormField label={t('goodsReceipts.unitCostPerPack')} required error={errors?.unitCost?.message}>
           <Input
             type="number"
             {...register(lineItemCost, { valueAsNumber: true })}
@@ -316,15 +317,15 @@ export function BatchLineItemRow({
               <Input
                 type="number"
                 {...register(`items.${index}.sellingPrice`, { valueAsNumber: true })}
-                min={unitCost}
+                min={unitCostFromPack}
                 step="0.01"
-                placeholder={`Min: ${unitCost.toFixed(2)}`}
+                placeholder={`Min: ${unitCostFromPack.toFixed(2)}`}
               />
             ) : (
               <div className="text-sm text-muted-foreground">
-                {unitCost > 0 && markupPercentage ? (
+                {packCost > 0 && markupPercentage ? (
                   <span>
-                    Cost/Unit: <span className="font-medium text-foreground">ETB {unitCost.toFixed(2)}</span>
+                    Cost/Pack: <span className="font-medium text-foreground">ETB {packCost.toFixed(2)}</span>
                     {" × "}{markupPercentage}% ={" "}
                     <span className="font-medium text-primary">ETB {calculatedSellingPrice.toFixed(2)}</span>
                   </span>
@@ -365,7 +366,7 @@ export function BatchLineItemRow({
               {t('goodsReceipts.totalCost')}: <span className="font-medium text-foreground">ETB {totalCost.toFixed(2)}</span>
             </span>
             <span>
-              {t('goodsReceipts.costPerUnit')}: <span className="font-medium text-foreground">ETB {unitCost.toFixed(2)}</span>
+              {t('goodsReceipts.costPerPack')}: <span className="font-medium text-foreground">ETB {packCost.toFixed(2)}</span>
             </span>
             {calculatedSellingPrice > 0 && (
               <span>

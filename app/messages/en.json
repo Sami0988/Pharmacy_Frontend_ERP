@@ -587,6 +587,7 @@
     "autoCalculated": "Auto-calculated",
     "totalUnits": "Total Units",
     "costPerUnit": "Cost/Unit",
+    "costPerPack": "Cost/Pack",
     "sellingPerUnit": "Sell/Unit",
     "sellingPerPack": "Sell/Pack"
   },
