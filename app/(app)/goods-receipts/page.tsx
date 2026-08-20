@@ -12,16 +12,18 @@ import { GoodsReceiptsTable } from '@/components/goods-receipts/GoodsReceiptsTab
 
 export default function GoodsReceiptsPage() {
   const { t } = useTranslations();
-  const [supplierFilter, setSupplierFilter] = useState('');
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
   const handleSearch = useCallback((value: string) => {
-    setSupplierFilter(value);
+    setSearch(value);
+    setPage(1);
   }, []);
 
   const { data: response, isLoading, isFetching } = useGetGoodsReceiptsQuery({
-    supplier: supplierFilter || undefined,
+    search: search || undefined,
+    supplier: search || undefined,
     page,
     limit,
   });
@@ -53,7 +55,7 @@ export default function GoodsReceiptsPage() {
       >
         <SearchInput
           onSearch={handleSearch}
-          placeholder={t('goodsReceipts.filterBySupplier')}
+          placeholder={t('goodsReceipts.searchPlaceholder')}
           className="max-w-md"
         />
       </motion.div>

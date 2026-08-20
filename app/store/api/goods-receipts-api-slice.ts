@@ -11,7 +11,7 @@ export const goodsReceiptsApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ['GoodsReceipt', 'Batch'],
   endpoints: (builder) => ({
-    getGoodsReceipts: builder.query<PaginatedResponse<GoodsReceipt>, { supplier?: string; branchId?: string; page?: number; limit?: number }>({
+    getGoodsReceipts: builder.query<PaginatedResponse<GoodsReceipt>, { search?: string; supplier?: string; branchId?: string; page?: number; limit?: number }>({
       query: (params) => ({
         url: '/goods-receipts',
         params,
@@ -65,6 +65,21 @@ export const goodsReceiptsApi = createApi({
         { type: 'Batch', id: 'LIST' },
       ],
     }),
+
+    deleteBatchItem: builder.mutation<
+      { movement: unknown; batch: unknown; previousTotalCost: number; newTotalCost: number },
+      { grnId: string; batchId: string }
+    >({
+      query: ({ grnId, batchId }) => ({
+        url: `/goods-receipts/${grnId}/items/${batchId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { grnId }) => [
+        { type: 'GoodsReceipt', id: grnId },
+        { type: 'GoodsReceipt', id: 'LIST' },
+        { type: 'Batch', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
@@ -74,4 +89,5 @@ export const {
   useCreateGoodsReceiptMutation,
   useUpdateGoodsReceiptMutation,
   useDeleteGoodsReceiptMutation,
+  useDeleteBatchItemMutation,
 } = goodsReceiptsApi;

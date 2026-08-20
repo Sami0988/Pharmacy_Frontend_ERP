@@ -1,11 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { ExternalLink, Pencil } from 'lucide-react';
+import { useState } from 'react';
+import { ExternalLink, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { DataTable, Column } from '@/components/ui/DataTable';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useDeleteBatchItemMutation } from '@/store/api/goods-receipts-api-slice';
+import { useAuth } from '@/lib/auth/use-auth';
+import { useTranslations } from '@/lib/i18n';
 import type { GoodsReceiptDetail as GoodsReceiptDetailType, Batch, GoodsReceiptPaymentMethod } from '@/types/api';
 
 interface GoodsReceiptDetailProps {
@@ -31,63 +37,105 @@ const PAYMENT_METHOD_LABELS: Record<GoodsReceiptPaymentMethod, string> = {
   mobile_bank: 'Mobile Bank',
 };
 
-const batchColumns: Column<Batch>[] = [
-  { key: 'itemName', header: 'Item' },
-  { key: 'batchNo', header: 'Batch No' },
-  {
-    key: 'expiryDate',
-    header: 'Expiry Date',
-    render: (b) => {
-      const expired = isExpired(b.expiryDate);
-      const nearExpiry = isNearExpiry(b.expiryDate);
-      return (
-        <div className="flex items-center gap-2">
-          <span>{new Date(b.expiryDate).toLocaleDateString()}</span>
-          {expired && <Badge variant="danger">Expired</Badge>}
-          {!expired && nearExpiry && <Badge variant="danger">Near Expiry</Badge>}
-        </div>
-      );
-    },
-  },
-  {
-    key: 'quantityReceived',
-    header: 'Quantity',
-    render: (b) => {
-      if (b.packSize && b.numberOfPacks) {
-        return (
-          <div>
-            <span className="font-medium">{b.quantityReceived} units</span>
-            <span className="text-muted-foreground text-xs block">
-              ({b.numberOfPacks} packs × {b.packSize})
-            </span>
-          </div>
-        );
-      }
-      if (b.packSize && b.packSize > 0) {
-        return (
-          <div>
-            <span className="font-medium">{b.quantityReceived} units</span>
-            <span className="text-muted-foreground text-xs block">
-              ({Math.ceil(b.quantityReceived / b.packSize)} packs of {b.packSize})
-            </span>
-          </div>
-        );
-      }
-      return <span className="font-medium">{b.quantityReceived}</span>;
-    },
-  },
-  {
-    key: 'unitCost',
-    header: 'Unit Cost',
-    render: (b) =>
-      b.unitCost.toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'ETB',
-      }),
-  },
-];
-
 export function GoodsReceiptDetail({ receipt, showEdit = true }: GoodsReceiptDetailProps) {
+  const { t } = useTranslations();
+  const { isAdmin, isStoreKeeper } = useAuth();
+  const canDeleteBatch = isAdmin || isStoreKeeper;
+  const [deleteBatchItem, { isLoading: isDeleting }] = useDeleteBatchItemMutation();
+  const [batchToDelete, setBatchToDelete] = useState<Batch | null>(null);
+
+  const handleDeleteBatch = async () => {
+    if (!batchToDelete) return;
+    try {
+      await deleteBatchItem({ grnId: receipt.id, batchId: batchToDelete.id }).unwrap();
+      toast.success(t('goodsReceipts.removeItemSuccess'));
+      setBatchToDelete(null);
+    } catch (err: unknown) {
+      const apiError = err as { status?: number; data?: { message?: string } };
+      if (apiError.data?.message) {
+        toast.error(apiError.data.message);
+      } else {
+        toast.error(t('goodsReceipts.removeItemFailed'));
+      }
+    }
+  };
+
+  const batchColumns: Column<Batch>[] = [
+    { key: 'itemName', header: 'Item' },
+    { key: 'batchNo', header: 'Batch No' },
+    {
+      key: 'expiryDate',
+      header: 'Expiry Date',
+      render: (b) => {
+        const expired = isExpired(b.expiryDate);
+        const nearExpiry = isNearExpiry(b.expiryDate);
+        return (
+          <div className="flex items-center gap-2">
+            <span>{new Date(b.expiryDate).toLocaleDateString()}</span>
+            {expired && <Badge variant="danger">Expired</Badge>}
+            {!expired && nearExpiry && <Badge variant="danger">Near Expiry</Badge>}
+          </div>
+        );
+      },
+    },
+    {
+      key: 'quantityReceived',
+      header: 'Quantity',
+      render: (b) => {
+        if (b.packSize && b.numberOfPacks) {
+          return (
+            <div>
+              <span className="font-medium">{b.quantityReceived} units</span>
+              <span className="text-muted-foreground text-xs block">
+                ({b.numberOfPacks} packs × {b.packSize})
+              </span>
+            </div>
+          );
+        }
+        if (b.packSize && b.packSize > 0) {
+          return (
+            <div>
+              <span className="font-medium">{b.quantityReceived} units</span>
+              <span className="text-muted-foreground text-xs block">
+                ({Math.ceil(b.quantityReceived / b.packSize)} packs of {b.packSize})
+              </span>
+            </div>
+          );
+        }
+        return <span className="font-medium">{b.quantityReceived}</span>;
+      },
+    },
+    {
+      key: 'unitCost',
+      header: 'Unit Cost',
+      render: (b) =>
+        b.unitCost.toLocaleString('en-US', {
+          style: 'currency',
+          currency: 'ETB',
+        }),
+    },
+    ...(canDeleteBatch
+      ? [
+          {
+            key: 'actions' as const,
+            header: '',
+            render: (b: Batch) => (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setBatchToDelete(b);
+                }}
+                className="text-muted-foreground hover:text-destructive"
+                title={t('goodsReceipts.removeItem')}
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            ),
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -194,6 +242,21 @@ export function GoodsReceiptDetail({ receipt, showEdit = true }: GoodsReceiptDet
           &larr; Back to Goods Receipts
         </Link>
       </div>
+
+      <ConfirmDialog
+        open={!!batchToDelete}
+        title={t('goodsReceipts.removeItem')}
+        description={t('goodsReceipts.removeItemConfirm', {
+          itemName: batchToDelete?.itemName ?? '',
+          batchNo: batchToDelete?.batchNo ?? '',
+        })}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        variant="danger"
+        onConfirm={handleDeleteBatch}
+        onCancel={() => setBatchToDelete(null)}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
