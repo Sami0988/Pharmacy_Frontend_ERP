@@ -1,19 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Lock, Unlock, AlertTriangle } from 'lucide-react';
+import { Lock, Unlock, AlertTriangle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
-import { useUpdateGoodsReceiptMutation } from '@/store/api/goods-receipts-api-slice';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
+import { useUpdateGoodsReceiptMutation, useAddGoodsReceiptItemMutation } from '@/store/api/goods-receipts-api-slice';
+import { useGetItemsQuery } from '@/store/api/items-api-slice';
+import { SearchableSelect } from '../ui/SearchableSelect';
 import { InvoiceUploadField } from './InvoiceUploadField';
 import {
   Select,
@@ -79,8 +82,12 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
   const { t } = useTranslations();
   const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
   const [batchErrors, setBatchErrors] = useState<Record<string, string>>({});
+  const [addItemOpen, setAddItemOpen] = useState(false);
+  const [itemSearch, setItemSearch] = useState('');
 
   const [updateGoodsReceipt, { isLoading }] = useUpdateGoodsReceiptMutation();
+  const [addGoodsReceiptItem, { isLoading: isAddingItem }] = useAddGoodsReceiptItemMutation();
+  const items = useGetItemsQuery({ search: itemSearch, page: 1, limit: 50 }).data?.data ?? [];
 
   const editSchema = z.object({
     receiptDate: z.string().min(1, 'Receipt date is required'),
@@ -131,6 +138,18 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
     }))
   );
 
+  const originalBatches = useState(() =>
+    receipt.items.map((batch) => ({
+      batchId: batch.id,
+      batchNo: batch.batchNo,
+      expiryDate: batch.expiryDate.split('T')[0],
+      numberOfPacks: batch.numberOfPacks || Math.ceil(batch.quantityReceived / (batch.packSize || 1)),
+      packSize: batch.packSize || 1,
+      unitCost: batch.unitCost,
+      sellingPrice: Number(batch.sellingPrice) || 0,
+    }))
+  )[0];
+
   const updateBatchEdit = (batchId: string, field: keyof BatchEditData, value: string | number) => {
     setBatchEdits((prev) =>
       prev.map((b) => {
@@ -145,6 +164,93 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
     );
   };
 
+  const addItemSchema = z.object({
+    itemId: z.string().min(1, 'Item is required'),
+    batchNo: z.string().min(1, 'Batch number is required'),
+    expiryDate: z.string().min(1, 'Expiry date is required'),
+    numberOfPacks: z.number().int().positive('Must be a positive integer'),
+    packSize: z.number().int().positive('Must be a positive integer'),
+    unitCost: z.number().positive('Must be a positive number'),
+    markupPercentage: z.number().optional(),
+    sellingPrice: z.number().optional(),
+  });
+
+  type AddItemFormData = z.infer<typeof addItemSchema>;
+
+  const MARKUP_OPTIONS = [10, 20, 30, 40, 50];
+
+  const {
+    register: registerAddItem,
+    handleSubmit: handleSubmitAddItem,
+    control: controlAddItem,
+    formState: { errors: addItemErrors },
+    reset: resetAddItem,
+    watch: watchAddItem,
+    setValue: setAddItemValue,
+  } = useForm<AddItemFormData>({
+    resolver: zodResolver(addItemSchema),
+    defaultValues: {
+      itemId: '',
+      batchNo: '',
+      expiryDate: '',
+      numberOfPacks: 1,
+      packSize: 1,
+      unitCost: 0,
+      markupPercentage: undefined,
+      sellingPrice: undefined,
+    },
+  });
+
+  const addPackCost = watchAddItem('unitCost') || 0;
+  const addNumberOfPacks = watchAddItem('numberOfPacks') || 0;
+  const addPackSize = watchAddItem('packSize') || 1;
+  const addMarkup = watchAddItem('markupPercentage');
+  const addSellingPrice = watchAddItem('sellingPrice');
+  const addUnitCostFromPack = addPackSize > 0 ? addPackCost / addPackSize : 0;
+  const addCalculatedSellingPrice = addMarkup
+    ? addUnitCostFromPack * (1 + addMarkup / 100)
+    : addSellingPrice || 0;
+  const addTotalUnits = addNumberOfPacks * addPackSize;
+  const addTotalCost = addNumberOfPacks * addPackCost;
+  const addCalculatedPackPrice = addCalculatedSellingPrice * addPackSize;
+  const [addCustomPriceMode, setAddCustomPriceMode] = useState(false);
+
+  const handleAddMarkupSelect = (pct: number) => {
+    setAddCustomPriceMode(false);
+    setAddItemValue('markupPercentage', pct);
+    setAddItemValue('sellingPrice', undefined);
+  };
+
+  const handleAddCustomPriceMode = () => {
+    setAddCustomPriceMode(true);
+    setAddItemValue('markupPercentage', undefined);
+  };
+
+  const handleAddItem = async (data: AddItemFormData) => {
+    const effectiveSellingPrice = data.sellingPrice || (data.markupPercentage ? addCalculatedSellingPrice : 0);
+    try {
+      await addGoodsReceiptItem({
+        grnId: receipt.id,
+        body: {
+          itemId: data.itemId,
+          batchNo: data.batchNo,
+          expiryDate: data.expiryDate,
+          numberOfPacks: data.numberOfPacks,
+          packSize: data.packSize,
+          unitCost: data.unitCost,
+          sellingPrice: effectiveSellingPrice,
+        },
+      }).unwrap();
+      toast.success('Item added successfully');
+      router.push(`/goods-receipts/${receipt.id}`);
+    } catch (err: unknown) {
+      const apiError = err as { data?: { message?: string; errors?: Record<string, string[]> } };
+      if (apiError.data?.message) {
+        toast.error(apiError.data.message);
+      }
+    }
+  };
+
   const onSubmit = async (data: EditFormData) => {
     setBatchErrors({});
 
@@ -157,16 +263,29 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
       formData.append('paymentDueDate', data.paymentDueDate);
     }
 
-    const itemsPayload = batchEdits.map((b) => ({
-      batchId: b.batchId,
-      batchNo: b.batchNo,
-      expiryDate: b.expiryDate,
-      numberOfPacks: b.numberOfPacks,
-      packSize: b.packSize,
-      unitCost: b.unitCost,
-      sellingPrice: b.sellingPrice,
-      packPrice: b.packPrice || (b.packSize > 1 ? b.sellingPrice * b.packSize : undefined),
-    }));
+    const itemsPayload = batchEdits
+      .filter((b) => {
+        const orig = originalBatches.find((o) => o.batchId === b.batchId);
+        if (!orig) return true;
+        return (
+          orig.batchNo !== b.batchNo ||
+          orig.expiryDate !== b.expiryDate ||
+          orig.numberOfPacks !== b.numberOfPacks ||
+          orig.packSize !== b.packSize ||
+          orig.unitCost !== b.unitCost ||
+          orig.sellingPrice !== b.sellingPrice
+        );
+      })
+      .map((b) => ({
+        batchId: b.batchId,
+        batchNo: b.batchNo,
+        expiryDate: b.expiryDate,
+        numberOfPacks: b.numberOfPacks,
+        packSize: b.packSize,
+        unitCost: b.unitCost,
+        sellingPrice: b.sellingPrice,
+        packPrice: b.packPrice || (b.packSize > 1 ? b.sellingPrice * b.packSize : undefined),
+      }));
     formData.append('items', JSON.stringify(itemsPayload));
 
     if (invoiceFile) {
@@ -329,7 +448,18 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
 
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-foreground">Batch Items</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">Batch Items</h2>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setAddItemOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add Item
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {batchEdits.map((batch) => {
@@ -482,6 +612,145 @@ export function GoodsReceiptEditForm({ receipt }: GoodsReceiptEditFormProps) {
           />
         </CardContent>
       </Card>
+
+      <Dialog open={addItemOpen} onOpenChange={setAddItemOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Item</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmitAddItem(handleAddItem)} className="space-y-4">
+            <FormField label="Item" required error={addItemErrors.itemId?.message}>
+              <Controller
+                name="itemId"
+                control={controlAddItem}
+                render={({ field }) => (
+                  <SearchableSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    onSearchChange={setItemSearch}
+                    options={items.map((item) => ({
+                      value: item.id,
+                      label: `${item.name}${item.strength ? ` - ${item.strength}` : ''}`,
+                    }))}
+                    placeholder="Select item"
+                    emptyMessage="No items found"
+                  />
+                )}
+              />
+            </FormField>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField label="Batch Number" required error={addItemErrors.batchNo?.message}>
+                <Input {...registerAddItem('batchNo')} placeholder="e.g. BATCH-001" />
+              </FormField>
+
+              <FormField label="Expiry Date" required error={addItemErrors.expiryDate?.message}>
+                <Input type="date" {...registerAddItem('expiryDate')} />
+              </FormField>
+
+              <FormField label="Number of Packs" required error={addItemErrors.numberOfPacks?.message}>
+                <Input type="number" {...registerAddItem('numberOfPacks', { valueAsNumber: true })} min={1} />
+              </FormField>
+
+              <FormField label="Pack Size" required error={addItemErrors.packSize?.message}>
+                <Input type="number" {...registerAddItem('packSize', { valueAsNumber: true })} min={1} />
+              </FormField>
+
+              <FormField label="Cost/Pack" required error={addItemErrors.unitCost?.message}>
+                <Input type="number" {...registerAddItem('unitCost', { valueAsNumber: true })} min={0} step="0.01" />
+              </FormField>
+            </div>
+
+            <FormField label="Selling Price" required error={addItemErrors.markupPercentage?.message || addItemErrors.sellingPrice?.message}>
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  {MARKUP_OPTIONS.map((pct) => (
+                    <button
+                      key={pct}
+                      type="button"
+                      onClick={() => handleAddMarkupSelect(pct)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                        addMarkup === pct && !addCustomPriceMode
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-background border-border text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      {pct}%
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleAddCustomPriceMode}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                      addCustomPriceMode
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background border-border text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    Custom
+                  </button>
+                </div>
+
+                {addCustomPriceMode ? (
+                  <Input
+                    type="number"
+                    {...registerAddItem('sellingPrice', { valueAsNumber: true })}
+                    min={addUnitCostFromPack}
+                    step="0.01"
+                    placeholder={`Min: ${addUnitCostFromPack.toFixed(2)}`}
+                  />
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    {addPackCost > 0 && addMarkup ? (
+                      <span>
+                        Cost/Pack: <span className="font-medium text-foreground">ETB {addPackCost.toFixed(2)}</span>
+                        {' × '}{addMarkup}% ={' '}
+                        <span className="font-medium text-primary">ETB {addCalculatedSellingPrice.toFixed(2)}</span>
+                      </span>
+                    ) : (
+                      <span>Select markup or enter custom price</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </FormField>
+
+            <div className="rounded-md bg-muted/50 p-3">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Auto-calculated</p>
+              <div className="flex flex-wrap gap-4 text-sm">
+                <span>
+                  Total Units: <span className="font-medium text-foreground">{addTotalUnits}</span>
+                </span>
+                <span>
+                  Total Cost: <span className="font-medium text-foreground">ETB {addTotalCost.toFixed(2)}</span>
+                </span>
+                <span>
+                  Cost/Pack: <span className="font-medium text-foreground">ETB {addPackCost.toFixed(2)}</span>
+                </span>
+                {addCalculatedSellingPrice > 0 && (
+                  <span>
+                    Selling/Unit: <span className="font-medium text-primary">ETB {addCalculatedSellingPrice.toFixed(2)}</span>
+                  </span>
+                )}
+                {addCalculatedSellingPrice > 0 && addPackSize > 1 && (
+                  <span>
+                    Selling/Pack: <span className="font-medium text-primary">ETB {addCalculatedPackPrice.toFixed(2)}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="secondary" onClick={() => setAddItemOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" isLoading={isAddingItem}>
+                Add Item
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }

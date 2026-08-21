@@ -1,6 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from '@/store/base-query';
 import type {
+  Batch,
   GoodsReceipt,
   GoodsReceiptDetail,
   PaginatedResponse,
@@ -66,6 +67,22 @@ export const goodsReceiptsApi = createApi({
       ],
     }),
 
+    addGoodsReceiptItem: builder.mutation<
+      Batch,
+      { grnId: string; body: { itemId: string; batchNo: string; expiryDate: string; numberOfPacks: number; packSize: number; unitCost: number; sellingPrice?: number } }
+    >({
+      query: ({ grnId, body }) => ({
+        url: `/goods-receipts/${grnId}/items`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (result, error, { grnId }) => [
+        { type: 'GoodsReceipt', id: grnId },
+        { type: 'GoodsReceipt', id: 'LIST' },
+        { type: 'Batch', id: 'LIST' },
+      ],
+    }),
+
     deleteBatchItem: builder.mutation<
       { movement: unknown; batch: unknown; previousTotalCost: number; newTotalCost: number },
       { grnId: string; batchId: string }
@@ -89,5 +106,6 @@ export const {
   useCreateGoodsReceiptMutation,
   useUpdateGoodsReceiptMutation,
   useDeleteGoodsReceiptMutation,
+  useAddGoodsReceiptItemMutation,
   useDeleteBatchItemMutation,
 } = goodsReceiptsApi;

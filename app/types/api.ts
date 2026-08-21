@@ -693,7 +693,6 @@ export interface CreateStockAdjustmentDto {
   locationId: string;
   newQuantity: number;
   reason: string;
-  adjustmentUnit?: 'single' | 'pack';
 }
 
 export interface BatchSearchResult {

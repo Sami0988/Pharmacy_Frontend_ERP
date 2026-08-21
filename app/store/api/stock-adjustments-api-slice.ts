@@ -16,7 +16,17 @@ export interface BatchWithStock {
   sellingPrice: string;
   quantityReceived: number;
   supplierName: string;
-  quantitiesByLocation: { locationId: string; quantity: string; packSize?: number; numberOfPacks?: number }[];
+  quantitiesByLocation: { locationId: string; locationName?: string; quantity: string; packSize?: number; numberOfPacks?: number }[];
+}
+
+export interface UpdateBatchDto {
+  numberOfPacks?: number;
+  packSize?: number;
+  unitCost?: number;
+  sellingPrice?: number;
+  packPrice?: number;
+  locationId?: string;
+  reason?: string;
 }
 
 export const stockAdjustmentsApi = createApi({
@@ -46,6 +56,18 @@ export const stockAdjustmentsApi = createApi({
         { type: 'Batch', id: 'LIST' },
       ],
     }),
+
+    updateBatch: builder.mutation<{ message: string }, { id: string; body: UpdateBatchDto }>({
+      query: ({ id, body }) => ({
+        url: `/batches/${id}`,
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: [
+        { type: 'Batch', id: 'LIST' },
+        { type: 'StockByLocation', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
@@ -55,4 +77,5 @@ export const {
   useGetBatchByIdQuery,
   useLazyGetBatchByIdQuery,
   useCreateStockAdjustmentMutation,
+  useUpdateBatchMutation,
 } = stockAdjustmentsApi;

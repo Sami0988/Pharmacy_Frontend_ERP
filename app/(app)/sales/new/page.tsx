@@ -159,14 +159,13 @@ export default function NewSalePage() {
             packPrice: effectivePackPrice,
           };
         } else {
-          const unitQuantity = c.quantity * (c.packSize || 1);
           const originalPrice = c.sellingPrice || c.unitPrice;
           return {
             ...c,
             saleUnit: 'single',
             unitPrice: originalPrice,
-            quantity: unitQuantity,
-            subtotal: unitQuantity * originalPrice,
+            quantity: 1,
+            subtotal: originalPrice,
           };
         }
       })

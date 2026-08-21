@@ -23,7 +23,6 @@ export default function GoodsReceiptsPage() {
 
   const { data: response, isLoading, isFetching } = useGetGoodsReceiptsQuery({
     search: search || undefined,
-    supplier: search || undefined,
     page,
     limit,
   });
