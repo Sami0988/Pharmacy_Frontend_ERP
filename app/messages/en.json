@@ -42,7 +42,9 @@
     "welcomeBack": "Welcome back",
     "language": "Language",
     "english": "English",
-    "amharic": "Amharic"
+    "amharic": "Amharic",
+    "previous": "Previous",
+    "next": "Next"
   },
   "sidebar": {
     "mainMenu": "Main Menu",

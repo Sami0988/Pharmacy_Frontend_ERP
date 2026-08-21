@@ -42,7 +42,9 @@
     "welcomeBack": "እንኳን ደህና መጡ",
     "language": "ቋንቋ",
     "english": "English",
-    "amharic": "አማርኛ"
+    "amharic": "አማርኛ",
+    "previous": "ቀደም",
+    "next": "ቀጥል"
   },
   "sidebar": {
     "mainMenu": "ዋና ማውጫ",

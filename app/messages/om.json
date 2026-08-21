@@ -42,7 +42,9 @@
     "welcomeBack": "Baga nagaaan deebitan",
     "language": "Afaan",
     "english": "Ingliffaa",
-    "amharic": "Amaariffaa"
+    "amharic": "Amaariffaa",
+    "previous": "Dura",
+    "next": "Itti aanu"
   },
   "sidebar": {
     "mainMenu": "Baafata Banqaa",

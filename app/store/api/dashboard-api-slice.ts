@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from '@/store/base-query';
-import type { DashboardSummary, ReorderSuggestion, DeadStockItem } from '@/types/api';
+import type { DashboardSummary, ReorderSuggestion, DeadStockItem, PaginatedResponse } from '@/types/api';
 
 export interface InventoryCounts {
   totalProducts: number;
@@ -55,8 +55,8 @@ export const dashboardApi = createApi({
     getInventoryCounts: builder.query<InventoryCounts, void>({
       query: () => '/dashboard/inventory-counts',
     }),
-    getCategoryBreakdown: builder.query<CategoryBreakdown[], void>({
-      query: () => '/dashboard/category-breakdown',
+    getCategoryBreakdown: builder.query<PaginatedResponse<CategoryBreakdown>, { page?: number; limit?: number }>({
+      query: (params) => ({ url: '/dashboard/category-breakdown', params }),
     }),
     getRevenueTrend: builder.query<RevenueTrendPoint[], { months?: number }>({
       query: (params) => ({ url: '/dashboard/revenue-trend', params }),

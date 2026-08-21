@@ -59,7 +59,8 @@ export default function InventoryOverviewPage() {
   const [search, setSearch] = useState('');
 
   const { data: inventoryCounts, isLoading: countsLoading } = useGetInventoryCountsQuery();
-  const { data: categories, isLoading: categoriesLoading } = useGetCategoryBreakdownQuery();
+  const { data: categoryResponse, isLoading: categoriesLoading } = useGetCategoryBreakdownQuery({});
+  const categories = categoryResponse?.data ?? [];
   const { data: itemsResponse, isLoading: itemsLoading } = useGetItemsQuery({});
   const items = useMemo(() => itemsResponse?.data ?? [], [itemsResponse]);
   const { data: stockData } = useGetStockByLocationQuery({});

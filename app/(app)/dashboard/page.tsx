@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useAuth } from '@/lib/auth/use-auth';
 import { useTranslations } from '@/lib/i18n';
 import {
@@ -76,11 +77,12 @@ const saleColumns: Column<Sale>[] = [
 export default function DashboardPage() {
   const { user } = useAuth();
   const { t } = useTranslations();
+  const [categoryPage, setCategoryPage] = useState(1);
 
   const { data: summary, isLoading: summaryLoading } = useGetSummaryQuery();
   const { data: reorderSuggestions, isLoading: reorderLoading } = useGetReorderSuggestionsQuery({});
   const { data: inventoryCounts, isLoading: inventoryLoading } = useGetInventoryCountsQuery();
-  const { data: categoryBreakdown, isLoading: categoryLoading } = useGetCategoryBreakdownQuery();
+  const { data: categoryResponse, isLoading: categoryLoading } = useGetCategoryBreakdownQuery({ page: categoryPage });
   const { data: revenueTrend, isLoading: revenueLoading } = useGetRevenueTrendQuery({ months: 6 });
   const { data: sparklineSeries, isLoading: sparklineLoading } = useGetSparklinesQuery({ days: 14 });
   const { data: notifSummary } = useGetNotificationSummaryQuery();
@@ -88,7 +90,8 @@ export default function DashboardPage() {
   const sales = salesResponse?.data ?? [];
 
   const inventory = inventoryCounts ?? { totalProducts: 0, lowStockCount: 0, outOfStockCount: 0, totalStock: 0 };
-  const categories = categoryBreakdown ?? [];
+  const categories = categoryResponse?.data ?? [];
+  const categoryTotalItems = categoryResponse?.meta?.totalItems ?? 0;
   const trends = revenueTrend ?? [];
   const sparklines = sparklineSeries ?? [];
 
@@ -200,7 +203,14 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.4 }}
         >
-          <CategoryDonutChart data={categories} isLoading={categoryLoading} />
+          <CategoryDonutChart
+            data={categories}
+            totalItems={categoryTotalItems}
+            isLoading={categoryLoading}
+            page={categoryResponse?.meta?.page ?? 1}
+            totalPages={categoryResponse?.meta?.totalPages ?? 1}
+            onPageChange={setCategoryPage}
+          />
         </motion.div>
       </div>
 
